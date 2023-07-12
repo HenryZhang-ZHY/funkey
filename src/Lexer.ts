@@ -1,4 +1,4 @@
-import { isAsciiLetter, isDigit, isWhiteSpace } from "./StringUtils"
+import { isAsciiLetter, isAsciiDigit, isWhiteSpace } from "./StringUtils"
 import { Token } from "./Token"
 import { TokenType } from "./TokenType"
 
@@ -117,7 +117,7 @@ export class Lexer {
           } else {
             token = new Token(TokenType.IDENT, identifier)
           }
-        } else if (isDigit(this.char)) {
+        } else if (isAsciiDigit(this.char)) {
           token = new Token(TokenType.INT, this.readNumber())
         } else {
           token = this.generateNoLiteralToken(TokenType.ILLEGAL)
@@ -141,7 +141,7 @@ export class Lexer {
 
   private readNumber(): string {
     let result = this.char
-    while (isDigit(this.nextChar)) {
+    while (isAsciiDigit(this.nextChar)) {
       result += this.nextChar
       this.next()
     }
