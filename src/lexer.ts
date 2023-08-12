@@ -1,6 +1,6 @@
-import {isAsciiLetter, isAsciiDigit, isWhiteSpace} from "./StringUtils"
-import {Token} from "./Token"
-import {TokenType} from "./TokenType"
+import {isAsciiLetter, isAsciiDigit, isWhiteSpace} from "./stringUtils.ts"
+import {Token} from "./token.ts"
+import {TokenType} from "./tokenType.ts"
 import {KeywordsToTokenTypeMapping} from "./keywords"
 
 const EOF = '\0'

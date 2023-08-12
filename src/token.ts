@@ -1,4 +1,4 @@
-import {TokenType} from './TokenType'
+import {TokenType} from './tokenType.ts'
 
 export class Token {
     public readonly type: TokenType

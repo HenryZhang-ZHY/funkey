@@ -15,10 +15,10 @@ import {
     ReturnStatement,
     Statement
 } from './ast'
-import {Lexer} from './Lexer'
+import {Lexer} from './lexer.ts'
 import {Parser} from './parser'
-import {TokenType} from "./TokenType";
-import {Token} from "./Token";
+import {TokenType} from "./tokenType.ts";
+import {Token} from "./token.ts";
 
 type LiteralExpressionValue = number | boolean | string
 type Operator = string

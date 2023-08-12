@@ -1,4 +1,4 @@
-import {Token} from './Token'
+import {Token} from './token.ts'
 
 export interface Node {
     tokenLiteral: string

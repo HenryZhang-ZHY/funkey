@@ -1,4 +1,4 @@
-import {TokenType} from "./TokenType.ts";
+import {TokenType} from "./tokenType.ts";
 
 export const Keywords = {
     fn: 'fn',
