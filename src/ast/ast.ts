@@ -1,7 +1,25 @@
 import {Token} from '../token/token.ts'
 
+export interface AstVisitor {
+    visitProgram: (x: Program) => void
+    visitExpressionStatement: (x: ExpressionStatement) => void
+    visitBlockStatement: (x: BlockStatement) => void
+    visitLetStatement: (x: LetStatement) => void
+    visitReturnStatement: (x: ReturnStatement) => void
+    visitPrefixExpression: (x: PrefixExpression) => void
+    visitInfixExpression: (x: InfixExpression) => void
+    visitCallExpression: (x: CallExpression) => void
+    visitIntegerLiteral: (x: IntegerLiteral) => void
+    visitBooleanLiteral: (x: BooleanLiteral) => void
+    visitFunctionLiteral: (x: FunctionLiteral) => void
+    visitIfExpression: (x: IfExpression) => void
+    visitIdentifier: (x: Identifier) => void
+}
+
 export interface Node {
     tokenLiteral: string
+
+    accept: (visitor: AstVisitor) => void
 }
 
 export interface Statement extends Node {
@@ -41,6 +59,10 @@ export class Program implements Node {
 
         return result
     }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitProgram(this)
+    }
 }
 
 export class IntegerLiteral implements Expression {
@@ -58,6 +80,10 @@ export class IntegerLiteral implements Expression {
 
     toString(): string {
         return this.value.toString()
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitIntegerLiteral(this)
     }
 }
 
@@ -77,6 +103,10 @@ export class BooleanLiteral implements Expression {
     toString(): string {
         return this.value.toString()
     }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitBooleanLiteral(this)
+    }
 }
 
 export class Identifier implements Expression {
@@ -94,6 +124,10 @@ export class Identifier implements Expression {
 
     toString(): string {
         return this.value
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitIdentifier(this)
     }
 }
 
@@ -118,6 +152,10 @@ export class FunctionLiteral implements Expression {
 \t${this.body.statements.join('\n\t')}
 }`
     }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitFunctionLiteral(this)
+    }
 }
 
 export class CallExpression implements Expression {
@@ -139,6 +177,10 @@ export class CallExpression implements Expression {
     toString(): string {
         return `${this.fn}(${this.args.join(', ')})`
     }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitCallExpression(this)
+    }
 }
 
 export class PrefixExpression implements Expression {
@@ -159,6 +201,10 @@ export class PrefixExpression implements Expression {
 
     toString(): string {
         return `(${this.operator}${this.value})`
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitPrefixExpression(this)
     }
 }
 
@@ -182,6 +228,10 @@ export class InfixExpression implements Expression {
 
     toString(): string {
         return `(${this.left} ${this.operator} ${this.right})`
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitInfixExpression(this)
     }
 }
 
@@ -210,6 +260,10 @@ export class IfExpression implements Expression {
         }
         return result
     }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitIfExpression(this)
+    }
 }
 
 export class BlockStatement implements Statement {
@@ -231,6 +285,10 @@ export class BlockStatement implements Statement {
 
     toString(): string {
         return this.statements.join('\n')
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitBlockStatement(this)
     }
 }
 
@@ -259,6 +317,10 @@ export class LetStatement implements Statement {
 
         return `${result};`
     }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitLetStatement(this)
+    }
 }
 
 export class ReturnStatement implements Statement {
@@ -278,6 +340,10 @@ export class ReturnStatement implements Statement {
     toString(): string {
         return `return${this.expression ? ' ' + this.expression : ''};`
     }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitReturnStatement(this)
+    }
 }
 
 export class ExpressionStatement implements Statement {
@@ -296,5 +362,9 @@ export class ExpressionStatement implements Statement {
 
     toString(): string {
         return `${this.expression};`
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitExpressionStatement(this)
     }
 }
