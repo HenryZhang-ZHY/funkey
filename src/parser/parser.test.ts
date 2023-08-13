@@ -14,11 +14,11 @@ import {
     Program,
     ReturnStatement,
     Statement
-} from './ast'
-import {Lexer} from './lexer.ts'
-import {Parser} from './parser'
-import {TokenType} from "./tokenType.ts";
-import {Token} from "./token.ts";
+} from '../ast/ast.ts'
+import {Lexer} from '../lexer/lexer.ts'
+import {Parser} from './parser.ts'
+import {TokenType} from "../token/tokenType.ts";
+import {Token} from "../token/token.ts";
 
 type LiteralExpressionValue = number | boolean | string
 type Operator = string
