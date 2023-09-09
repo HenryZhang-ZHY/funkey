@@ -4,6 +4,9 @@ export enum TokenType {
 
     IDENT = 'IDENT',
     INT = 'INT',
+    TRUE = 'TRUE',
+    FALSE = 'FALSE',
+    STRING = 'STRING',
 
     ASSIGN = '=',
     PLUS = '+',
@@ -27,8 +30,6 @@ export enum TokenType {
 
     FUNCTION = 'FUNCTION',
     LET = 'LET',
-    TRUE = 'TRUE',
-    FALSE = 'FALSE',
     IF = 'IF',
     ELSE = 'ELSE',
     RETURN = 'RETURN',

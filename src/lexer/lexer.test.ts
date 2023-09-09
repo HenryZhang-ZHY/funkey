@@ -6,7 +6,6 @@ import {TokenType} from '../token/tokenType.ts'
 describe('nextToken', () => {
     test.each([
         {input: 'let', expectedToken: new Token(TokenType.LET, 'let')}
-
     ])(
         'Token should be $expectedToken.type, $expectedToken.literal',
         ({input, expectedToken}) => {
@@ -28,6 +27,19 @@ describe('nextToken', () => {
 
         expect(token2.type).toBe(TokenType.SEMICOLON)
         expect(token2.literal).toBe(';')
+    })
+
+    test.each([
+        {input: `"foo"`, result: 'foo'},
+        {input: `"hello world"`, result: 'hello world'}
+    ])
+    ('parse string [$input]', ({input, result}) => {
+        const lexer = new Lexer(input)
+
+        const token = lexer.nextToken()
+
+        expect(token.type).toBe(TokenType.STRING)
+        expect(token.literal).toBe(result)
     })
 })
 

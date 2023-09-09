@@ -11,6 +11,7 @@ export interface AstVisitor {
     visitCallExpression: (x: CallExpression) => void
     visitIntegerLiteral: (x: IntegerLiteral) => void
     visitBooleanLiteral: (x: BooleanLiteral) => void
+    visitStringLiteral: (x: StringLiteral) => void
     visitFunctionLiteral: (x: FunctionLiteral) => void
     visitIfExpression: (x: IfExpression) => void
     visitIdentifier: (x: Identifier) => void
@@ -106,6 +107,28 @@ export class BooleanLiteral implements Expression {
 
     accept(visitor: AstVisitor): void {
         visitor.visitBooleanLiteral(this)
+    }
+}
+
+export class StringLiteral implements Expression {
+    private readonly token: Token
+    readonly value: string
+
+    constructor(token: Token, value: string) {
+        this.token = token
+        this.value = value
+    }
+
+    get tokenLiteral(): string {
+        return this.token.literal
+    }
+
+    toString(): string {
+        return this.value.toString()
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitStringLiteral(this)
     }
 }
 

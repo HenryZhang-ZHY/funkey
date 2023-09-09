@@ -13,7 +13,8 @@ import {
     PrefixExpression,
     Program,
     ReturnStatement,
-    Statement
+    Statement,
+    StringLiteral
 } from '../ast/ast.ts'
 import {Lexer} from '../lexer/lexer.ts'
 import {Parser} from './parser.ts'
@@ -98,6 +99,15 @@ describe('ExpressionStatement', () => {
         const result = parseStatement(statement)
 
         assertIntegerStatement(result, value)
+    })
+
+    test.each([
+        {statement: '"foo";', value: 'foo'},
+        {statement: '"hello world";', value: 'hello world'}
+    ])('string literal expression statement: [$statement]', ({statement, value}) => {
+        const result = parseStatement(statement)
+
+        assertStringStatement(result, value)
     })
 
     test.each([
@@ -398,8 +408,7 @@ function identifierLiteral(value: string) {
 function parseStatement(statement: string) {
     const program = parseProgram(statement)
 
-    const result = program.statements[0]
-    return result;
+    return program.statements[0];
 }
 
 function parseProgram(input: string, expectedErrorCounts: number = 0): Program {
@@ -441,6 +450,13 @@ function assertBooleanStatement(statement: Statement, value: boolean) {
 
     assert(statement.expression)
     assertBooleanLiteralExpression(statement.expression, value)
+}
+
+function assertStringStatement(statement: Statement, value: string) {
+    assert(statement instanceof ExpressionStatement)
+
+    assert(statement.expression)
+    assertStringLiteralExpression(statement.expression, value)
 }
 
 function assertPrefixExpressionStatement(statement: Statement, operator: Operator, value: LiteralExpressionValue) {
@@ -486,6 +502,11 @@ function assertIntegerLiteralExpression(expression: Expression, value: number) {
 
 function assertBooleanLiteralExpression(expression: Expression, value: boolean) {
     assert(expression instanceof BooleanLiteral)
+    expect(expression.value).toBe(value)
+}
+
+function assertStringLiteralExpression(expression: Expression, value: string) {
+    assert(expression instanceof StringLiteral)
     expect(expression.value).toBe(value)
 }
 

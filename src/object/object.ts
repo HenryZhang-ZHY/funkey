@@ -7,6 +7,7 @@ export type ObjectType = string
 const ObjectTypes = {
     Integer: 'Integer',
     Boolean: 'Boolean',
+    String: 'String',
     Function: 'Function',
     Null: 'Null'
 }
@@ -85,6 +86,34 @@ export class Boolean implements Object {
     static _False = new Boolean(false)
     static get False(): Boolean {
         return this._False
+    }
+}
+
+export class String implements Object {
+    private _value: string
+
+    constructor(value: string) {
+        this._value = value
+    }
+
+    get value(): string {
+        return this._value
+    }
+
+    get type(): ObjectType {
+        return ObjectTypes.String
+    }
+
+    get inspect(): string {
+        return this.value
+    }
+
+    equals(other: Object): boolean {
+        if (this.type !== other.type) {
+            return false
+        }
+        assert(other instanceof String)
+        return this.value === other.value
     }
 }
 

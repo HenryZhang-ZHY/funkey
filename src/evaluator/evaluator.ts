@@ -5,9 +5,9 @@ import {
     IntegerLiteral, LetStatement,
     Node,
     PrefixExpression,
-    Program, ReturnStatement
+    Program, ReturnStatement, StringLiteral
 } from "../ast/ast.ts"
-import {Boolean, Function, Integer, Null, Object} from "../object/object.ts"
+import {Boolean, Function, Integer, Null, Object, String} from "../object/object.ts"
 import {assert} from "vitest"
 
 class ReturnTrap {
@@ -164,11 +164,14 @@ class AstEvaluatorVisitor implements AstVisitor {
                 if (left instanceof Integer && right instanceof Integer) {
                     this._result = evaluateArithmeticExpression(left, x.operator, right)
                     break
+                } else if (left instanceof String && right instanceof String && x.operator === '+') {
+                    this._result = new String(`${left.value}${right.value}`)
+                    break
                 } else {
                     if (left.type !== right.type) {
-                        throw new Error(`type mismatch: ${left.type} + ${right.type}`)
+                        throw new Error(`type mismatch: ${left.type} ${x.operator} ${right.type}`)
                     } else {
-                        throw new Error(`unknown operator: ${left.type} + ${right.type}`)
+                        throw new Error(`unknown operator: ${left.type} ${x.operator} ${right.type}`)
                     }
                 }
             case '>':
@@ -256,6 +259,10 @@ class AstEvaluatorVisitor implements AstVisitor {
 
     visitIntegerLiteral(x: IntegerLiteral) {
         this._result = new Integer(x.value)
+    }
+
+    visitStringLiteral(x: StringLiteral) {
+        this._result = new String(x.value)
     }
 
     visitFunctionLiteral(x: FunctionLiteral) {

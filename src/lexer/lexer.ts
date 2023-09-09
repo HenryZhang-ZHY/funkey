@@ -1,4 +1,4 @@
-import {isAsciiLetter, isAsciiDigit, isWhiteSpace} from "../utils/stringUtils.ts"
+import {isAsciiDigit, isAsciiLetter, isWhiteSpace} from "../utils/stringUtils.ts"
 import {Token} from "../token/token.ts"
 import {TokenType} from "../token/tokenType.ts"
 import {KeywordsToTokenTypeMapping} from "../token/keywords.ts"
@@ -39,7 +39,7 @@ export class Lexer {
     nextToken(): Token {
         this.eatWhiteSpaces()
 
-        let token: Token | undefined = undefined
+        let token: Token | undefined;
         switch (this.char) {
             case EOF:
                 token = new Token(TokenType.EOF, '')
@@ -98,6 +98,9 @@ export class Lexer {
             case '}':
                 token = this.generateNoLiteralToken(TokenType.RBRACE)
                 break
+            case '"':
+                token = new Token(TokenType.STRING, this.readString())
+                break
             default:
                 if (isAsciiLetter(this.char)) {
                     const identifier = this.readIdentifier()
@@ -134,6 +137,16 @@ export class Lexer {
             result += this.nextChar
             this.next()
         }
+        return result
+    }
+
+    private readString(): string {
+        let result = ''
+        while (this.nextChar !== '"') {
+            result += this.nextChar
+            this.next()
+        }
+        this.next()
         return result
     }
 

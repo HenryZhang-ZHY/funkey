@@ -1,7 +1,7 @@
 import {Lexer} from '../lexer/lexer.ts'
 import {Parser} from '../parser/parser.ts'
 import {evaluate as evalCore, EvaluatingError} from './evaluator.ts'
-import {Boolean, Function, Integer, Null, Object} from '../object/object.ts'
+import {Boolean, Function, Integer, Null, Object, String} from '../object/object.ts'
 import {assert, describe, expect, test} from 'vitest'
 
 describe('evaluate Integer', () => {
@@ -24,6 +24,18 @@ describe('evaluate Boolean', () => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof Boolean)
+        expect(evaluated.value).toBe(result)
+    })
+})
+
+describe('evaluate String', () => {
+    test.each([
+        {input: `"foo"`, result: 'foo'},
+        {input: `"lorem string"`, result: 'lorem string'}
+    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+        const evaluated = evaluate(input)
+
+        assert(evaluated instanceof String)
         expect(evaluated.value).toBe(result)
     })
 })
@@ -72,6 +84,9 @@ describe('evaluate InFixExpression', () => {
         {input: '(1 < 2) == false', result: false},
         {input: '(1 > 2) == true', result: false},
         {input: '(1 > 2) == false', result: true},
+        {input: `"foo" == "foo"`, result: true},
+        {input: `"hello" == "world"`, result: false},
+        {input: `"hello" + " world" == "hello world"`, result: true},
     ])(`boolean operator: evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
@@ -99,6 +114,16 @@ describe('evaluate InFixExpression', () => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof Integer)
+        expect(evaluated.value).toBe(result)
+    })
+
+    test.each([
+        {input: `"hello" + " world"`, result: 'hello world'},
+        {input: `"a" + "b" + "c"`, result: 'abc'},
+    ])(`string operator: evaluate [$input] should get [$result]`, ({input, result}) => {
+        const evaluated = evaluate(input)
+
+        assert(evaluated instanceof String)
         expect(evaluated.value).toBe(result)
     })
 })
@@ -162,6 +187,7 @@ describe('error handling', () => {
         {input: '5 + true; 5;', expectedErrorMessage: 'type mismatch: Integer + Boolean'},
         {input: '-true', expectedErrorMessage: 'unknown operator: -Boolean'},
         {input: 'true + false;', expectedErrorMessage: 'unknown operator: Boolean + Boolean'},
+        {input: `"hello" - " world"`, expectedErrorMessage: 'unknown operator: String - String'},
         {input: '5; true + false; 5', expectedErrorMessage: 'unknown operator: Boolean + Boolean',},
         {input: 'if (10 > 1) { true + false; }', expectedErrorMessage: 'unknown operator: Boolean + Boolean'},
         {
@@ -228,13 +254,15 @@ describe('evaluate Function call', () => {
         {input: 'let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));', result: 20},
         {input: 'fn(x) { x; }(5)', result: 5},
         {input: 'let i = 5; fn(a) { let i = a; }(10); i;', result: 5},
-        {input: `
+        {
+            input: `
         let newAdder = fn(x) {
             fn(y) { x + y };
         };
         let addTwo = newAdder(2);
         addTwo(2);
-        `, result: 4},
+        `, result: 4
+        },
     ])
     (`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)

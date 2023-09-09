@@ -13,7 +13,7 @@ import {
     PrefixExpression,
     Program,
     ReturnStatement,
-    Statement
+    Statement, StringLiteral
 } from '../ast/ast.ts'
 import {Lexer} from '../lexer/lexer.ts'
 import {TokenType} from "../token/tokenType.ts"
@@ -69,6 +69,7 @@ export class Parser {
         this.registerPrefixParseFunction(TokenType.IDENT, this.parseIdentifier)
 
         this.registerPrefixParseFunction(TokenType.INT, this.parseInteger)
+        this.registerPrefixParseFunction(TokenType.STRING, this.parseString)
 
         this.registerPrefixParseFunction(TokenType.TRUE, this.parseBoolean)
         this.registerPrefixParseFunction(TokenType.FALSE, this.parseBoolean)
@@ -431,6 +432,10 @@ export class Parser {
         }
 
         return new IntegerLiteral(this._currentToken, value)
+    }
+
+    private parseString(): Expression | undefined {
+        return new StringLiteral(this._currentToken, this._currentToken.literal)
     }
 
     private parseBoolean(): Expression | undefined {
