@@ -7,7 +7,7 @@ import {
     PrefixExpression,
     Program, ReturnStatement, StringLiteral
 } from "../ast/ast.ts"
-import {Boolean, Function, Integer, Null, Object, String} from "../object/object.ts"
+import {Boolean, BuiltinFunction, Function, Integer, Null, Object, String} from "../object/object.ts"
 import {assert} from "vitest"
 
 class ReturnTrap {
@@ -54,6 +54,10 @@ export class Environment {
         this.variableMap.set(identifier, new Box<Object>(Null.Instance))
     }
 
+    hasVariable(identifier: string): boolean {
+        return !!(this.getVariableBoxRecursive(identifier))
+    }
+
     getVariableValue(identifier: string): Object {
         const box = this.getVariableBoxRecursive(identifier)
         if (!box) {
@@ -84,9 +88,30 @@ class Box<T> {
 class AstEvaluatorVisitor implements AstVisitor {
     private _result: Object = Null.Instance
     private readonly environment: Environment
+    private readonly builtins: Map<string, BuiltinFunction>
 
     constructor(environment: Environment | undefined = undefined) {
         this.environment = environment ?? new Environment()
+        this.builtins = AstEvaluatorVisitor.constructingBuiltins()
+    }
+
+    private static constructingBuiltins(): Map<string, BuiltinFunction> {
+        const builtins = []
+
+        builtins.push(new BuiltinFunction('len', (...args: Object[]) => {
+            if (args.length != 1) {
+                throw new Error(`wrong number of arguments. got=${args.length}, want=1`)
+            }
+
+            const arg = args[0]
+            if (!(arg instanceof String)) {
+                throw new Error(`argument to \`len\` not supported, got ${arg.type}`)
+            }
+
+            return AstEvaluatorVisitor.packNativeValue(arg.value.length)
+        }))
+
+        return new Map<string, BuiltinFunction>(builtins.map(x => [x.name, x]))
     }
 
     visitProgram(x: Program) {
@@ -220,12 +245,19 @@ class AstEvaluatorVisitor implements AstVisitor {
     }
 
     visitCallExpression(x: CallExpression) {
-        const args = x.args.map(arg => evaluate(arg, this.environment))
         const fn = evaluate(x.fn, this.environment)
-        if (!(fn instanceof Function)) {
+        const args = x.args.map(arg => evaluate(arg, this.environment))
+
+        if (fn instanceof  Function) {
+            this.applyFunctionCall(fn, args)
+        } else if (fn instanceof  BuiltinFunction) {
+            this._result = fn.apply(...args)
+        } else {
             throw new Error('it is not a function')
         }
+    }
 
+    private applyFunctionCall(fn: Function, args: Object[]) {
         if (fn.parameters.length !== args.length) {
             throw new Error('arguments count mismatch')
         }
@@ -270,7 +302,17 @@ class AstEvaluatorVisitor implements AstVisitor {
     }
 
     visitIdentifier(x: Identifier) {
-        this._result = this.environment.getVariableValue(x.value)
+        if (this.environment.hasVariable(x.value)) {
+            this._result = this.environment.getVariableValue(x.value)
+            return
+        }
+
+        if (this.builtins.has(x.value)) {
+            this._result = this.builtins.get(x.value)!
+            return
+        }
+
+        throw new Error(`identifier not found: ${x.value}`)
     }
 
     get result(): Object {

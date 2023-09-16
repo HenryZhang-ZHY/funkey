@@ -9,6 +9,7 @@ const ObjectTypes = {
     Boolean: 'Boolean',
     String: 'String',
     Function: 'Function',
+    BuiltinFunction: 'BuiltInFunction',
     Null: 'Null'
 }
 
@@ -147,6 +148,35 @@ export class Function implements Object {
 
     get environment() {
         return this._environment
+    }
+
+    equals(other: Object): boolean {
+        if (this.type !== other.type) {
+            return false
+        }
+        return this === other
+    }
+}
+
+export class BuiltinFunction implements Object {
+    readonly name: string
+    private readonly fn: (...args: Object[]) => Object
+
+    constructor(name:string, fn: (...args: Object[]) => Object) {
+       this.name = name
+       this.fn = fn
+    }
+
+    get type(): ObjectType {
+        return ObjectTypes.BuiltinFunction
+    }
+
+    get inspect(): string {
+        return `[Builtin: ${this.name}]`
+    }
+
+    apply(...args: Object[]): Object {
+        return this.fn(...args)
     }
 
     equals(other: Object): boolean {

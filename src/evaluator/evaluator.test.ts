@@ -202,7 +202,9 @@ describe('error handling', () => {
         {
             input: 'foo',
             expectedErrorMessage: 'identifier not found: foo'
-        }
+        },
+        {input: `len(1)`, expectedErrorMessage: 'argument to `len` not supported, got Integer'},
+        {input: `len("one", "two")`, expectedErrorMessage: 'wrong number of arguments. got=2, want=1'}
     ])
     (`evaluate [$input] should get error: [$expectedErrorMessage]`, ({input, expectedErrorMessage}) => {
         let errorMessage;
@@ -263,6 +265,18 @@ describe('evaluate Function call', () => {
         addTwo(2);
         `, result: 4
         },
+    ])
+    (`evaluate [$input] should get [$result]`, ({input, result}) => {
+        const evaluated = evaluate(input)
+
+        assert(evaluated instanceof Integer)
+        expect(evaluated.value).toBe(result)
+    })
+
+    test.each([
+        {input: `len("")`, result: 0},
+        {input: `len("four")`, result: 4},
+        {input: `len("hello world")`, result: 11},
     ])
     (`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
