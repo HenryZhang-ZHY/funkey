@@ -1,7 +1,7 @@
 import {Lexer} from '../lexer/lexer.ts'
 import {Parser} from '../parser/parser.ts'
 import {evaluate as evalCore, EvaluatingError} from './evaluator.ts'
-import {Boolean, Function, Integer, Null, Object, String} from '../object/object.ts'
+import {Array, Boolean, Function, Integer, Null, Object, String} from '../object/object.ts'
 import {assert, describe, expect, test} from 'vitest'
 
 describe('evaluate Integer', () => {
@@ -37,6 +37,24 @@ describe('evaluate String', () => {
 
         assert(evaluated instanceof String)
         expect(evaluated.value).toBe(result)
+    })
+})
+
+describe('evaluate Array', () => {
+    test.each([
+        {input: `[1, 2 + 2, 3 * 3]`, result: [1, 4, 9]},
+        {
+            input: `
+        let q = 1;
+        [q]`,
+            result: [1]
+        },
+        {input: `[]`, result: []}
+    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+        const evaluated = evaluate(input)
+
+        assert(evaluated instanceof Array)
+        expect(evaluated.elements.map(x => x.inspect)).toEqual(result.map(x => x.toString()))
     })
 })
 
@@ -124,6 +142,23 @@ describe('evaluate InFixExpression', () => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof String)
+        expect(evaluated.value).toBe(result)
+    })
+})
+
+describe('evaluate IndexExpression', () => {
+    test.each([
+        {input: `[1, 2 + 2, 3 * 3][0]`, result: 1},
+        {input: `[1, 2 + 2, 3 * 3][1 * 1]`, result: 4},
+        {input: `[1, 2 + 2, 3 * 3][1 + 1]`, result: 9},
+        {input: "let i = 0; [1][i];", result: 1},
+        {input: "let myArray = [1, 2, 3]; myArray[2];", result: 3},
+        {input: "let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", result: 6},
+        {input: "let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", result: 2,},
+    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+        const evaluated = evaluate(input)
+
+        assert(evaluated instanceof Integer)
         expect(evaluated.value).toBe(result)
     })
 })

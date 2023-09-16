@@ -1,12 +1,13 @@
 import {Constants as TokenConstants, Token} from '../token/token.ts'
 import {
+    ArrayLiteral,
     BlockStatement,
     BooleanLiteral, CallExpression,
     Expression,
     ExpressionStatement,
     FunctionLiteral,
     Identifier,
-    IfExpression,
+    IfExpression, IndexExpression,
     InfixExpression,
     IntegerLiteral,
     LetStatement,
@@ -31,6 +32,7 @@ enum OperatorPrecendence {
     PRODUCT,
     PREFIX,
     CALL,
+    INDEX,
 }
 
 const TokenTypePrecedenceMapping = new Map<TokenType, OperatorPrecendence>([
@@ -43,6 +45,7 @@ const TokenTypePrecedenceMapping = new Map<TokenType, OperatorPrecendence>([
     [TokenType.SLASH, OperatorPrecendence.PRODUCT],
     [TokenType.ASTERISK, OperatorPrecendence.PRODUCT],
     [TokenType.LPAREN, OperatorPrecendence.CALL],
+    [TokenType.LBRACKET, OperatorPrecendence.INDEX],
 ]);
 
 export class Parser {
@@ -79,6 +82,8 @@ export class Parser {
 
         this.registerPrefixParseFunction(TokenType.LPAREN, this.parseGroupedExpression)
 
+        this.registerPrefixParseFunction(TokenType.LBRACKET, this.parseArrayLiteralExpression)
+
         this.registerPrefixParseFunction(TokenType.IF, this.parseIfExpression)
 
         this.registerPrefixParseFunction(TokenType.FUNCTION, this.parseFunctionLiteral)
@@ -102,6 +107,8 @@ export class Parser {
         this.registerInfixParseFunction(TokenType.GT, this.parseInfixExpression)
 
         this.registerInfixParseFunction(TokenType.LPAREN, this.parseCallExpression)
+
+        this.registerInfixParseFunction(TokenType.LBRACKET, this.parseIndexExpression)
     }
 
     private registerInfixParseFunction(tokenType: TokenType, fn: InfixParseFunction) {
@@ -247,6 +254,49 @@ export class Parser {
         return expression
     }
 
+    private parseArrayLiteralExpression(): ArrayLiteral | undefined {
+        const token = this._currentToken
+        const items = this.parseArrayItems()
+        return new ArrayLiteral(token, items)
+    }
+
+    private parseArrayItems(): Expression[] {
+        const items: Expression[] = []
+
+        if (this._nextToken.type === TokenType.RBRACKET) {
+            this.nextToken()
+            return items
+        }
+
+        this.nextToken()
+
+        const first = this.parseExpression(OperatorPrecendence.LOWEST)
+        if (!first) {
+            this.addParseError("parse array item failed")
+            return items
+        }
+        items.push(first)
+
+        while (this._nextToken.type === TokenType.COMMA) {
+            this.nextToken()
+            this.nextToken()
+
+            const item = this.parseExpression(OperatorPrecendence.LOWEST)
+            if (!item) {
+                this.addParseError("parse array item failed")
+                return items
+            }
+            items.push(item)
+        }
+
+        if (!this.assertNextTokenTypeIs(TokenType.RBRACKET)) {
+            return items
+        }
+        this.nextToken()
+
+        return items
+    }
+
     private parseIfExpression(): Expression | undefined {
         const token = this._currentToken;
 
@@ -376,14 +426,10 @@ export class Parser {
     private parseCallExpression(fn: Expression): CallExpression | undefined {
         const token = this._currentToken
         const args = this.parseCallArguments()
-        if (!args) {
-            this.addParseError('parse arguments failed')
-            return
-        }
         return new CallExpression(token, fn, args)
     }
 
-    private parseCallArguments(): Expression[] | undefined {
+    private parseCallArguments(): Expression[] {
         const args: Expression[] = []
 
         if (this._nextToken.type === TokenType.RPAREN) {
@@ -418,6 +464,23 @@ export class Parser {
         this.nextToken()
 
         return args
+    }
+
+    private parseIndexExpression(left: Expression): IndexExpression | undefined {
+        const token = this._currentToken
+
+        this.nextToken()
+        const indexExpression = this.parseExpression(OperatorPrecendence.LOWEST)
+        if (!indexExpression) {
+            this.addParseError('parse index expression failed.')
+            return
+        }
+        if (!this.assertNextTokenTypeIs(TokenType.RBRACKET)) {
+            return
+        }
+        this.nextToken()
+
+        return new IndexExpression(token, left, indexExpression)
     }
 
     private parseIdentifier(): Expression | undefined {

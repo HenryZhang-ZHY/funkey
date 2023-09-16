@@ -1,13 +1,14 @@
 import {
+    ArrayLiteral,
     AstVisitor, BlockStatement,
     BooleanLiteral, CallExpression,
-    ExpressionStatement, FunctionLiteral, Identifier, IfExpression, InfixExpression,
+    ExpressionStatement, FunctionLiteral, Identifier, IfExpression, IndexExpression, InfixExpression,
     IntegerLiteral, LetStatement,
     Node,
     PrefixExpression,
     Program, ReturnStatement, StringLiteral
 } from "../ast/ast.ts"
-import {Boolean, BuiltinFunction, Function, Integer, Null, Object, String} from "../object/object.ts"
+import {Array, Boolean, BuiltinFunction, Function, Integer, Null, Object, String} from "../object/object.ts"
 import {assert} from "vitest"
 
 class ReturnTrap {
@@ -248,9 +249,9 @@ class AstEvaluatorVisitor implements AstVisitor {
         const fn = evaluate(x.fn, this.environment)
         const args = x.args.map(arg => evaluate(arg, this.environment))
 
-        if (fn instanceof  Function) {
+        if (fn instanceof Function) {
             this.applyFunctionCall(fn, args)
-        } else if (fn instanceof  BuiltinFunction) {
+        } else if (fn instanceof BuiltinFunction) {
             this._result = fn.apply(...args)
         } else {
             throw new Error('it is not a function')
@@ -270,6 +271,20 @@ class AstEvaluatorVisitor implements AstVisitor {
         })
 
         this._result = evaluate(fn.body, environment)
+    }
+
+    visitIndexExpression(x: IndexExpression) {
+        const left = evaluate(x.left, this.environment)
+        const index = evaluate(x.index, this.environment)
+
+        if (!(left instanceof Array) || !(index instanceof Integer)) {
+            throw new Error(`index expression is not valid`)
+        }
+        if (index.value < 0 || index.value > left.elements.length) {
+            throw new Error(`index out of bound`)
+        }
+
+        this._result = left.elements[index.value]
     }
 
     visitIfExpression(x: IfExpression) {
@@ -295,6 +310,10 @@ class AstEvaluatorVisitor implements AstVisitor {
 
     visitStringLiteral(x: StringLiteral) {
         this._result = new String(x.value)
+    }
+
+    visitArrayLiteral(x: ArrayLiteral) {
+        this._result = new Array(x.elements.map(e => evaluate(e, this.environment)))
     }
 
     visitFunctionLiteral(x: FunctionLiteral) {

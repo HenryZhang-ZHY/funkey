@@ -21,7 +21,7 @@ export interface Object {
 }
 
 export class Integer implements Object {
-    private _value: number
+    private readonly _value: number
 
     constructor(value: number) {
         this._value = value
@@ -49,7 +49,7 @@ export class Integer implements Object {
 }
 
 export class Boolean implements Object {
-    private _value: boolean
+    private readonly _value: boolean
 
     constructor(value: boolean) {
         this._value = value
@@ -91,7 +91,7 @@ export class Boolean implements Object {
 }
 
 export class String implements Object {
-    private _value: string
+    private readonly _value: string
 
     constructor(value: string) {
         this._value = value
@@ -115,6 +115,34 @@ export class String implements Object {
         }
         assert(other instanceof String)
         return this.value === other.value
+    }
+}
+
+export class Array implements Object {
+    private readonly _elements: Object[]
+
+    constructor(elements: Object[]) {
+        this._elements = elements
+    }
+
+    get elements(): Object[] {
+        return this._elements
+    }
+
+    get type(): ObjectType {
+        return ObjectTypes.String
+    }
+
+    get inspect(): string {
+        return `[${this._elements.join(',')}]`
+    }
+
+    equals(other: Object): boolean {
+        if (this.type !== other.type) {
+            return false
+        }
+        assert(other instanceof Array)
+        return this._elements === other._elements
     }
 }
 

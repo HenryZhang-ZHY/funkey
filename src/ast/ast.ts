@@ -9,9 +9,11 @@ export interface AstVisitor {
     visitPrefixExpression: (x: PrefixExpression) => void
     visitInfixExpression: (x: InfixExpression) => void
     visitCallExpression: (x: CallExpression) => void
+    visitIndexExpression: (x: IndexExpression) => void
     visitIntegerLiteral: (x: IntegerLiteral) => void
     visitBooleanLiteral: (x: BooleanLiteral) => void
     visitStringLiteral: (x: StringLiteral) => void
+    visitArrayLiteral: (x: ArrayLiteral) => void
     visitFunctionLiteral: (x: FunctionLiteral) => void
     visitIfExpression: (x: IfExpression) => void
     visitIdentifier: (x: Identifier) => void
@@ -181,6 +183,28 @@ export class FunctionLiteral implements Expression {
     }
 }
 
+export class ArrayLiteral implements Expression {
+    private readonly token: Token
+    readonly elements: Expression[]
+
+    constructor(token: Token, elements: Expression[]) {
+        this.token = token
+        this.elements = elements
+    }
+
+    get tokenLiteral(): string {
+        return this.token.literal
+    }
+
+    toString(): string {
+        return `[${this.elements.join(', ')}]`
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitArrayLiteral(this)
+    }
+}
+
 export class CallExpression implements Expression {
     private readonly token: Token
 
@@ -205,6 +229,33 @@ export class CallExpression implements Expression {
         visitor.visitCallExpression(this)
     }
 }
+
+
+export class IndexExpression implements Expression {
+    private readonly token: Token
+
+    readonly left: Expression
+    readonly index: Expression
+
+    constructor(token: Token, left: Expression, index: Expression) {
+        this.token = token
+        this.left = left
+        this.index = index
+    }
+
+    get tokenLiteral(): string {
+        return this.token.literal
+    }
+
+    toString(): string {
+        return `(${this.left}[${this.index}])`
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitIndexExpression(this)
+    }
+}
+
 
 export class PrefixExpression implements Expression {
     private readonly token: Token

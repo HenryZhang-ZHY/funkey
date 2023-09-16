@@ -1,12 +1,13 @@
 import {assert, describe, expect, test} from 'vitest'
 import {
+    ArrayLiteral,
     BooleanLiteral,
     CallExpression,
     Expression,
     ExpressionStatement,
     FunctionLiteral,
     Identifier,
-    IfExpression,
+    IfExpression, IndexExpression,
     InfixExpression,
     IntegerLiteral,
     LetStatement,
@@ -18,8 +19,8 @@ import {
 } from '../ast/ast.ts'
 import {Lexer} from '../lexer/lexer.ts'
 import {Parser} from './parser.ts'
-import {TokenType} from "../token/tokenType.ts";
-import {Token} from "../token/token.ts";
+import {TokenType} from "../token/tokenType.ts"
+import {Token} from "../token/token.ts"
 
 type LiteralExpressionValue = number | boolean | string
 type Operator = string
@@ -31,9 +32,9 @@ describe('LetStatement', () => {
         {statement: 'let flag = false;', identifier: 'flag', expression: false},
         {statement: 'let foo = bar;', identifier: 'foo', expression: 'bar'},
     ])('trivial statement: [$statement]', ({statement, identifier, expression}) => {
-        const result = parseStatement(statement);
+        const result = parseStatement(statement)
 
-        assertLetStatement(result, identifier, expression);
+        assertLetStatement(result, identifier, expression)
     })
 
 
@@ -44,7 +45,7 @@ describe('LetStatement', () => {
     ])(
         'should complain for missing $expected token when input is $statement',
         ({statement, expected, actual}) => {
-            const errors = getParseErrors(statement);
+            const errors = getParseErrors(statement)
 
             expect(errors[0]).toBe(`expected next token to be ${expected}, got ${actual} instead`)
         })
@@ -111,6 +112,33 @@ describe('ExpressionStatement', () => {
     })
 
     test.each([
+        {statement: '[1, 2 * 2, 3 + 3]', value: ['1', '(2 * 2)', '(3 + 3)']},
+        {statement: '[]', value: []},
+    ])('array literal expression statement: [$statement]', ({statement, value}) => {
+        const result = parseStatement(statement)
+
+        assert(result instanceof ExpressionStatement)
+
+        assert(result.expression)
+        const expression = result.expression
+        assert(expression instanceof ArrayLiteral)
+        expect(expression.elements.map(x => `${x}`)).toEqual(value)
+    })
+
+    test('parse IndexExpression', () => {
+        const statement = 'arr[1 + 1]'
+        const result = parseStatement(statement)
+
+        assert(result instanceof ExpressionStatement)
+
+        assert(result.expression)
+        const expression = result.expression
+        assert(expression instanceof IndexExpression)
+        assertIdentifierExpression(expression.left, 'arr')
+        assertInfixExpression(expression.index, 1, '+', 1)
+    })
+
+    test.each([
         {statement: '!5;', operator: '!', value: 5},
         {statement: '-15;', operator: '-', value: 15},
         {statement: '!true;', operator: '!', value: true},
@@ -120,7 +148,7 @@ describe('ExpressionStatement', () => {
         ({statement, operator, value}) => {
             const parsedStatement = parseStatement(statement)
 
-            assertPrefixExpressionStatement(parsedStatement, operator, value);
+            assertPrefixExpressionStatement(parsedStatement, operator, value)
         })
 
     test.each([
@@ -237,6 +265,14 @@ describe('ExpressionStatement', () => {
         {
             statement: "add(a + b + c * d / f + g)",
             output: "add((((a + b) + ((c * d) / f)) + g))",
+        },
+        {
+            statement: "a * [1, 2, 3, 4][b * c] * d",
+            output: "((a * ([1, 2, 3, 4][(b * c)])) * d)",
+        },
+        {
+            statement: "add(a * b[2], b[1], 2 * [1, 2][1])",
+            output: "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))",
         },
     ])('operator precedence parsing: input:[$statement], output:[$output]', ({statement, output}) => {
         const result = parseStatement(statement)
@@ -462,7 +498,7 @@ function assertStringStatement(statement: Statement, value: string) {
 function assertPrefixExpressionStatement(statement: Statement, operator: Operator, value: LiteralExpressionValue) {
     assert(statement instanceof ExpressionStatement)
     assert(statement.expression instanceof PrefixExpression)
-    assertPrefixExpression(statement.expression, operator, value);
+    assertPrefixExpression(statement.expression, operator, value)
 }
 
 function assertPrefixExpression(expression: PrefixExpression, operator: Operator, value: LiteralExpressionValue) {
@@ -512,5 +548,5 @@ function assertStringLiteralExpression(expression: Expression, value: string) {
 
 function assertIdentifierExpression(expression: Expression, value: string) {
     assert(expression instanceof Identifier)
-    expect(expression.value).toBe(value);
+    expect(expression.value).toBe(value)
 }

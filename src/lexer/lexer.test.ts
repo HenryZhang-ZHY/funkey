@@ -63,6 +63,7 @@ describe('tokenize program', () => {
   
   10 == 10;
   10 != 9;
+  [1, 2];
 `;
 
 
@@ -139,6 +140,12 @@ describe('tokenize program', () => {
         new Token(TokenType.INT, '10'),
         new Token(TokenType.NOT_EQ, '!='),
         new Token(TokenType.INT, '9'),
+        new Token(TokenType.SEMICOLON, ';'),
+        new Token(TokenType.LBRACKET, '['),
+        new Token(TokenType.INT, '1'),
+        new Token(TokenType.COMMA, ','),
+        new Token(TokenType.INT, '2'),
+        new Token(TokenType.RBRACKET, ']'),
         new Token(TokenType.SEMICOLON, ';'),
         new Token(TokenType.EOF, ''),
     ]

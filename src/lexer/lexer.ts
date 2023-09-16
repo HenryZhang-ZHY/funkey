@@ -92,6 +92,12 @@ export class Lexer {
             case ')':
                 token = this.generateNoLiteralToken(TokenType.RPAREN)
                 break
+            case '[':
+                token = this.generateNoLiteralToken(TokenType.LBRACKET)
+                break
+            case ']':
+                token = this.generateNoLiteralToken(TokenType.RBRACKET)
+                break
             case '{':
                 token = this.generateNoLiteralToken(TokenType.LBRACE)
                 break
