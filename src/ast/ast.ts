@@ -10,6 +10,7 @@ export interface AstVisitor {
     visitInfixExpression: (x: InfixExpression) => void
     visitCallExpression: (x: CallExpression) => void
     visitIndexExpression: (x: IndexExpression) => void
+    visitDotExpression: (x: DotExpression) => void
     visitIntegerLiteral: (x: IntegerLiteral) => void
     visitBooleanLiteral: (x: BooleanLiteral) => void
     visitStringLiteral: (x: StringLiteral) => void
@@ -256,6 +257,30 @@ export class IndexExpression implements Expression {
     }
 }
 
+export class DotExpression implements Expression {
+    private readonly token: Token
+
+    readonly left: Expression
+    readonly right: Identifier
+
+    constructor(token: Token, left: Expression, identifier: Identifier) {
+        this.token = token
+        this.left = left
+        this.right = identifier
+    }
+
+    get tokenLiteral(): string {
+        return this.token.literal
+    }
+
+    toString(): string {
+        return `(${this.left}.${this.right})`
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitDotExpression(this)
+    }
+}
 
 export class PrefixExpression implements Expression {
     private readonly token: Token

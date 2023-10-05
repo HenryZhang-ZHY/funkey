@@ -1,20 +1,30 @@
 import {
     ArrayLiteral,
     AstVisitor, BlockStatement,
-    BooleanLiteral, CallExpression,
+    BooleanLiteral, CallExpression, DotExpression,
     ExpressionStatement, FunctionLiteral, Identifier, IfExpression, IndexExpression, InfixExpression,
     IntegerLiteral, LetStatement,
     Node,
     PrefixExpression,
     Program, ReturnStatement, StringLiteral
 } from "../ast/ast.ts"
-import {Array, Boolean, BuiltinFunction, Function, Integer, Null, Object, String} from "../object/object.ts"
+import {
+    F_Array,
+    F_Boolean,
+    F_BuiltinFunction,
+    F_Function,
+    F_Integer,
+    F_Null,
+    F_Object,
+    F_String,
+    packNativeValue
+} from "../object/f_Object.ts"
 import {assert} from "vitest"
 
 class ReturnTrap {
-    readonly value: Object
+    readonly value: F_Object
 
-    constructor(value: Object) {
+    constructor(value: F_Object) {
         this.value = value
     }
 }
@@ -30,19 +40,19 @@ export class EvaluatingError extends Error {
 }
 
 export class Environment {
-    private readonly variableMap: Map<string, Box<Object>>
+    private readonly variableMap: Map<string, Box<F_Object>>
     private readonly parent: Environment | undefined
 
     constructor(parent: Environment | undefined = undefined) {
-        this.variableMap = new Map<string, Box<Object>>()
+        this.variableMap = new Map<string, Box<F_Object>>()
         this.parent = parent
     }
 
-    private getVariableBoxRecursive(identifier: string): Box<Object> | undefined {
+    private getVariableBoxRecursive(identifier: string): Box<F_Object> | undefined {
         return this.getVariableBox(identifier) ?? this.parent?.getVariableBoxRecursive(identifier)
     }
 
-    private getVariableBox(identifier: string): Box<Object> | undefined {
+    private getVariableBox(identifier: string): Box<F_Object> | undefined {
         return this.variableMap.get(identifier)
     }
 
@@ -52,14 +62,14 @@ export class Environment {
             throw new Error(`identifier has been declared`)
         }
 
-        this.variableMap.set(identifier, new Box<Object>(Null.Instance))
+        this.variableMap.set(identifier, new Box<F_Object>(F_Null.Instance))
     }
 
     hasVariable(identifier: string): boolean {
         return !!(this.getVariableBoxRecursive(identifier))
     }
 
-    getVariableValue(identifier: string): Object {
+    getVariableValue(identifier: string): F_Object {
         const box = this.getVariableBoxRecursive(identifier)
         if (!box) {
             throw new Error(`identifier not found: ${identifier}`)
@@ -68,7 +78,7 @@ export class Environment {
         return box.value
     }
 
-    setVariableValue(identifier: string, value: Object) {
+    setVariableValue(identifier: string, value: F_Object) {
         const box = this.getVariableBoxRecursive(identifier)
         if (!box) {
             throw new Error(`identifier not found: ${identifier}`)
@@ -87,32 +97,32 @@ class Box<T> {
 }
 
 class AstEvaluatorVisitor implements AstVisitor {
-    private _result: Object = Null.Instance
+    private _result: F_Object = F_Null.Instance
     private readonly environment: Environment
-    private readonly builtins: Map<string, BuiltinFunction>
+    private readonly builtins: Map<string, F_BuiltinFunction>
 
     constructor(environment: Environment | undefined = undefined) {
         this.environment = environment ?? new Environment()
         this.builtins = AstEvaluatorVisitor.constructingBuiltins()
     }
 
-    private static constructingBuiltins(): Map<string, BuiltinFunction> {
+    private static constructingBuiltins(): Map<string, F_BuiltinFunction> {
         const builtins = []
 
-        builtins.push(new BuiltinFunction('len', (...args: Object[]) => {
+        builtins.push(new F_BuiltinFunction('len', (...args: F_Object[]) => {
             if (args.length != 1) {
                 throw new Error(`wrong number of arguments. got=${args.length}, want=1`)
             }
 
             const arg = args[0]
-            if (!(arg instanceof String)) {
+            if (!(arg instanceof F_String)) {
                 throw new Error(`argument to \`len\` not supported, got ${arg.type}`)
             }
 
-            return AstEvaluatorVisitor.packNativeValue(arg.value.length)
+            return packNativeValue(arg.value.length)
         }))
 
-        return new Map<string, BuiltinFunction>(builtins.map(x => [x.name, x]))
+        return new Map<string, F_BuiltinFunction>(builtins.map(x => [x.name, x]))
     }
 
     visitProgram(x: Program) {
@@ -166,13 +176,13 @@ class AstEvaluatorVisitor implements AstVisitor {
 
         function evaluateBang(visitor: AstEvaluatorVisitor) {
             const expressionValue = evaluate(x.value, visitor.environment)
-            visitor._result = AstEvaluatorVisitor.packNativeValue(!visitor.isTruthy(expressionValue))
+            visitor._result = packNativeValue(!visitor.isTruthy(expressionValue))
         }
 
         function evaluateMinus(visitor: AstEvaluatorVisitor) {
             const expressionValue = evaluate(x.value, visitor.environment)
-            if (expressionValue instanceof Integer) {
-                visitor._result = new Integer(-expressionValue.value)
+            if (expressionValue instanceof F_Integer) {
+                visitor._result = new F_Integer(-expressionValue.value)
             } else {
                 throw new Error(`unknown operator: -${expressionValue.type}`)
             }
@@ -187,11 +197,11 @@ class AstEvaluatorVisitor implements AstVisitor {
             case '-':
             case '*':
             case '/':
-                if (left instanceof Integer && right instanceof Integer) {
+                if (left instanceof F_Integer && right instanceof F_Integer) {
                     this._result = evaluateArithmeticExpression(left, x.operator, right)
                     break
-                } else if (left instanceof String && right instanceof String && x.operator === '+') {
-                    this._result = new String(`${left.value}${right.value}`)
+                } else if (left instanceof F_String && right instanceof F_String && x.operator === '+') {
+                    this._result = new F_String(`${left.value}${right.value}`)
                     break
                 } else {
                     if (left.type !== right.type) {
@@ -202,8 +212,8 @@ class AstEvaluatorVisitor implements AstVisitor {
                 }
             case '>':
             case '<':
-                assert(left instanceof Integer)
-                assert(right instanceof Integer)
+                assert(left instanceof F_Integer)
+                assert(right instanceof F_Integer)
                 this._result = evaluateComparingExpression(left, x.operator, right)
                 break
             case '==':
@@ -214,34 +224,34 @@ class AstEvaluatorVisitor implements AstVisitor {
                 break
         }
 
-        function evaluateArithmeticExpression(left: Integer, operator: '+' | '-' | '*' | '/', right: Integer): Integer {
+        function evaluateArithmeticExpression(left: F_Integer, operator: '+' | '-' | '*' | '/', right: F_Integer): F_Integer {
             switch (operator) {
                 case "+":
-                    return AstEvaluatorVisitor.packNativeValue(left.value + right.value)
+                    return packNativeValue(left.value + right.value)
                 case "-":
-                    return AstEvaluatorVisitor.packNativeValue(left.value - right.value)
+                    return packNativeValue(left.value - right.value)
                 case "*":
-                    return AstEvaluatorVisitor.packNativeValue(left.value * right.value)
+                    return packNativeValue(left.value * right.value)
                 case "/":
-                    return AstEvaluatorVisitor.packNativeValue(left.value / right.value)
+                    return packNativeValue(left.value / right.value)
             }
         }
 
-        function evaluateComparingExpression(left: Integer, operator: '>' | '<' | '==' | '!=', right: Integer): Boolean {
+        function evaluateComparingExpression(left: F_Integer, operator: '>' | '<' | '==' | '!=', right: F_Integer): F_Boolean {
             switch (operator) {
                 case ">":
-                    return AstEvaluatorVisitor.packNativeValue(left.value > right.value)
+                    return packNativeValue(left.value > right.value)
                 case "<":
-                    return AstEvaluatorVisitor.packNativeValue(left.value < right.value)
+                    return packNativeValue(left.value < right.value)
                 case "==":
-                    return AstEvaluatorVisitor.packNativeValue(left.value == right.value)
+                    return packNativeValue(left.value == right.value)
                 case "!=":
-                    return AstEvaluatorVisitor.packNativeValue(left.value != right.value)
+                    return packNativeValue(left.value != right.value)
             }
         }
 
-        function evaluateEquals(left: Object, right: Object): Boolean {
-            return AstEvaluatorVisitor.packNativeValue(left.equals(right))
+        function evaluateEquals(left: F_Object, right: F_Object): F_Boolean {
+            return packNativeValue(left.equals(right))
         }
     }
 
@@ -249,16 +259,16 @@ class AstEvaluatorVisitor implements AstVisitor {
         const fn = evaluate(x.fn, this.environment)
         const args = x.args.map(arg => evaluate(arg, this.environment))
 
-        if (fn instanceof Function) {
+        if (fn instanceof F_Function) {
             this.applyFunctionCall(fn, args)
-        } else if (fn instanceof BuiltinFunction) {
+        } else if (fn instanceof F_BuiltinFunction) {
             this._result = fn.apply(...args)
         } else {
             throw new Error('it is not a function')
         }
     }
 
-    private applyFunctionCall(fn: Function, args: Object[]) {
+    private applyFunctionCall(fn: F_Function, args: F_Object[]) {
         if (fn.parameters.length !== args.length) {
             throw new Error('arguments count mismatch')
         }
@@ -273,11 +283,23 @@ class AstEvaluatorVisitor implements AstVisitor {
         this._result = evaluate(fn.body, environment)
     }
 
+    visitDotExpression(x: DotExpression) {
+        const left = evaluate(x.left, this.environment)
+        // @ts-ignore
+        const result = left[x.right.value]
+
+        if (!(result instanceof F_Object)) {
+            throw new Error('invalid operation')
+        }
+
+        this._result = result
+    }
+
     visitIndexExpression(x: IndexExpression) {
         const left = evaluate(x.left, this.environment)
         const index = evaluate(x.index, this.environment)
 
-        if (!(left instanceof Array) || !(index instanceof Integer)) {
+        if (!(left instanceof F_Array) || !(index instanceof F_Integer)) {
             throw new Error(`index expression is not valid`)
         }
         if (index.value < 0 || index.value > left.elements.length) {
@@ -295,29 +317,29 @@ class AstEvaluatorVisitor implements AstVisitor {
             if (x.alternative) {
                 this._result = evaluate(x.alternative, this.environment)
             } else {
-                this._result = Null.Instance
+                this._result = F_Null.Instance
             }
         }
     }
 
     visitBooleanLiteral(x: BooleanLiteral) {
-        this._result = x.value ? Boolean.True : Boolean.False
+        this._result = x.value ? F_Boolean.True : F_Boolean.False
     }
 
     visitIntegerLiteral(x: IntegerLiteral) {
-        this._result = new Integer(x.value)
+        this._result = new F_Integer(x.value)
     }
 
     visitStringLiteral(x: StringLiteral) {
-        this._result = new String(x.value)
+        this._result = new F_String(x.value)
     }
 
     visitArrayLiteral(x: ArrayLiteral) {
-        this._result = new Array(x.elements.map(e => evaluate(e, this.environment)))
+        this._result = new F_Array(x.elements.map(e => evaluate(e, this.environment)))
     }
 
     visitFunctionLiteral(x: FunctionLiteral) {
-        this._result = new Function(x.parameters, x.body, this.environment)
+        this._result = new F_Function(x.parameters, x.body, this.environment)
     }
 
     visitIdentifier(x: Identifier) {
@@ -334,32 +356,22 @@ class AstEvaluatorVisitor implements AstVisitor {
         throw new Error(`identifier not found: ${x.value}`)
     }
 
-    get result(): Object {
+    get result(): F_Object {
         return this._result
     }
 
-    private isTruthy(x: Object) {
-        if (x instanceof Integer) {
+    private isTruthy(x: F_Object) {
+        if (x instanceof F_Integer) {
             return x.value !== 0
-        } else if (x instanceof Boolean) {
+        } else if (x instanceof F_Boolean) {
             return x.value
         } else {
             return false
         }
     }
-
-    private static packNativeValue(value: number): Integer
-    private static packNativeValue(value: boolean): Boolean
-    private static packNativeValue(value: number | boolean): Object {
-        if (typeof value === 'number') {
-            return new Integer(value)
-        } else {
-            return value ? Boolean.True : Boolean.False
-        }
-    }
 }
 
-export function evaluate(node: Node, environment: Environment | undefined = undefined): Object {
+export function evaluate(node: Node, environment: Environment | undefined = undefined): F_Object {
     const evaluatorVisitor = new AstEvaluatorVisitor(environment)
     node.accept(evaluatorVisitor)
     return evaluatorVisitor.result

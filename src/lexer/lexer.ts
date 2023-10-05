@@ -80,6 +80,9 @@ export class Lexer {
             case '/':
                 token = this.generateNoLiteralToken(TokenType.SLASH)
                 break
+            case '.':
+                token = this.generateNoLiteralToken(TokenType.DOT)
+                break
             case ',':
                 token = this.generateNoLiteralToken(TokenType.COMMA)
                 break

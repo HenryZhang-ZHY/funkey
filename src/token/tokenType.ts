@@ -20,6 +20,8 @@ export enum TokenType {
     EQ = '==',
     NOT_EQ = '!=',
 
+    DOT = '.',
+
     COMMA = ',',
     SEMICOLON = ';',
 

@@ -4,26 +4,27 @@ import {Environment} from "../evaluator/evaluator.ts";
 
 export type ObjectType = string
 
-const ObjectTypes = {
-    Integer: 'Integer',
-    Boolean: 'Boolean',
-    String: 'String',
-    Function: 'Function',
-    BuiltinFunction: 'BuiltInFunction',
-    Null: 'Null'
+enum ObjectTypes {
+    Integer = 'Integer',
+    Boolean = 'Boolean',
+    String = 'String',
+    Function = 'Function',
+    BuiltinFunction = 'BuiltInFunction',
+    Null = 'Null'
 }
 
-export interface Object {
-    type: ObjectType
-    inspect: string
+export abstract class F_Object {
+    abstract type: ObjectType
+    abstract inspect: string
 
-    equals: (other: Object) => boolean
+    abstract equals(other: F_Object): boolean
 }
 
-export class Integer implements Object {
+export class F_Integer extends F_Object {
     private readonly _value: number
 
     constructor(value: number) {
+        super()
         this._value = value
     }
 
@@ -31,27 +32,28 @@ export class Integer implements Object {
         return this._value
     }
 
-    get type(): ObjectType {
+    override get type(): ObjectType {
         return ObjectTypes.Integer
     }
 
-    get inspect(): string {
+    override get inspect(): string {
         return this.value.toString()
     }
 
-    equals(other: Object): boolean {
+    override equals(other: F_Object): boolean {
         if (this.type !== other.type) {
             return false
         }
-        assert(other instanceof Integer)
+        assert(other instanceof F_Integer)
         return this.value === other.value
     }
 }
 
-export class Boolean implements Object {
+export class F_Boolean extends F_Object {
     private readonly _value: boolean
 
     constructor(value: boolean) {
+        super()
         this._value = value
     }
 
@@ -59,41 +61,42 @@ export class Boolean implements Object {
         return this._value
     }
 
-    get type(): ObjectType {
+    override get type(): ObjectType {
         return ObjectTypes.Boolean
     }
 
-    get inspect(): string {
+    override get inspect(): string {
         return this.value.toString()
     }
 
-    equals(other: Object): boolean {
+    override equals(other: F_Object): boolean {
         if (this.type !== other.type) {
             return false
         }
-        assert(other instanceof Boolean)
+        assert(other instanceof F_Boolean)
         return this.value === other.value
     }
 
-    invert(): Boolean {
-        return this.value ? Boolean.False : Boolean.True
+    invert(): F_Boolean {
+        return this.value ? F_Boolean.False : F_Boolean.True
     }
 
-    static _True = new Boolean(true)
-    static get True(): Boolean {
+    static _True = new F_Boolean(true)
+    static get True(): F_Boolean {
         return this._True
     }
 
-    static _False = new Boolean(false)
-    static get False(): Boolean {
+    static _False = new F_Boolean(false)
+    static get False(): F_Boolean {
         return this._False
     }
 }
 
-export class String implements Object {
+export class F_String extends F_Object {
     private readonly _value: string
 
     constructor(value: string) {
+        super()
         this._value = value
     }
 
@@ -101,67 +104,73 @@ export class String implements Object {
         return this._value
     }
 
-    get type(): ObjectType {
+    override get type(): ObjectType {
         return ObjectTypes.String
     }
 
-    get inspect(): string {
+    override get inspect(): string {
         return this.value
     }
 
-    equals(other: Object): boolean {
+    get length(): F_Object {
+        return packNativeValue(this.value.length)
+    }
+
+    override equals(other: F_Object): boolean {
         if (this.type !== other.type) {
             return false
         }
-        assert(other instanceof String)
+        assert(other instanceof F_String)
         return this.value === other.value
     }
 }
 
-export class Array implements Object {
-    private readonly _elements: Object[]
+export class F_Array extends F_Object {
+    private readonly _elements: F_Object[]
 
-    constructor(elements: Object[]) {
+    constructor(elements: F_Object[]) {
+        super()
         this._elements = elements
     }
 
-    get elements(): Object[] {
+    get elements(): F_Object[] {
         return this._elements
     }
 
-    get type(): ObjectType {
+    override get type(): ObjectType {
         return ObjectTypes.String
     }
 
-    get inspect(): string {
+    override get inspect(): string {
         return `[${this._elements.join(',')}]`
     }
 
-    equals(other: Object): boolean {
+    override equals(other: F_Object): boolean {
         if (this.type !== other.type) {
             return false
         }
-        assert(other instanceof Array)
+        assert(other instanceof F_Array)
         return this._elements === other._elements
     }
 }
 
-export class Function implements Object {
+export class F_Function extends F_Object {
     private readonly _parameters: Identifier[]
     private readonly _body: BlockStatement
     private readonly _environment: Environment
 
     constructor(parameters: Identifier[], body: BlockStatement, environment: Environment) {
+        super()
         this._parameters = parameters
         this._body = body
         this._environment = environment
     }
 
-    get type(): ObjectType {
+    override get type(): ObjectType {
         return ObjectTypes.Function
     }
 
-    get inspect(): string {
+    override get inspect(): string {
         return `fn(${this._parameters.join(', ')}) {
     ${this._body}}`
     }
@@ -178,7 +187,7 @@ export class Function implements Object {
         return this._environment
     }
 
-    equals(other: Object): boolean {
+    override equals(other: F_Object): boolean {
         if (this.type !== other.type) {
             return false
         }
@@ -186,28 +195,29 @@ export class Function implements Object {
     }
 }
 
-export class BuiltinFunction implements Object {
+export class F_BuiltinFunction extends F_Object {
     readonly name: string
-    private readonly fn: (...args: Object[]) => Object
+    private readonly fn: (...args: F_Object[]) => F_Object
 
-    constructor(name:string, fn: (...args: Object[]) => Object) {
-       this.name = name
-       this.fn = fn
+    constructor(name: string, fn: (...args: F_Object[]) => F_Object) {
+        super()
+        this.name = name
+        this.fn = fn
     }
 
-    get type(): ObjectType {
+    override get type(): ObjectType {
         return ObjectTypes.BuiltinFunction
     }
 
-    get inspect(): string {
+    override get inspect(): string {
         return `[Builtin: ${this.name}]`
     }
 
-    apply(...args: Object[]): Object {
+    apply(...args: F_Object[]): F_Object {
         return this.fn(...args)
     }
 
-    equals(other: Object): boolean {
+    override equals(other: F_Object): boolean {
         if (this.type !== other.type) {
             return false
         }
@@ -215,22 +225,32 @@ export class BuiltinFunction implements Object {
     }
 }
 
-export class Null implements Object {
-    get type(): ObjectType {
+export class F_Null extends F_Object {
+    override get type(): ObjectType {
         return ObjectTypes.Null
     }
 
-    get inspect(): string {
+    override get inspect(): string {
         return 'null'
     }
 
-    equals(other: Object): boolean {
+    override equals(other: F_Object): boolean {
         return other.type === ObjectTypes.Null
     }
 
-    static _instance = new Null()
+    static _instance = new F_Null()
 
-    static get Instance(): Object {
+    static get Instance(): F_Object {
         return this._instance
+    }
+}
+
+export function packNativeValue(value: number): F_Integer
+export function packNativeValue(value: boolean): F_Boolean
+export function packNativeValue(value: number | boolean): F_Object {
+    if (typeof value === 'number') {
+        return new F_Integer(value)
+    } else {
+        return value ? F_Boolean.True : F_Boolean.False
     }
 }

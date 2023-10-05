@@ -2,7 +2,7 @@ import {assert, describe, expect, test} from 'vitest'
 import {
     ArrayLiteral,
     BooleanLiteral,
-    CallExpression,
+    CallExpression, DotExpression,
     Expression,
     ExpressionStatement,
     FunctionLiteral,
@@ -136,6 +136,19 @@ describe('ExpressionStatement', () => {
         assert(expression instanceof IndexExpression)
         assertIdentifierExpression(expression.left, 'arr')
         assertInfixExpression(expression.index, 1, '+', 1)
+    })
+
+    test('parse DotExpression', () => {
+        const statement = 'a.b'
+        const result = parseStatement(statement)
+
+        assert(result instanceof ExpressionStatement)
+
+        assert(result.expression)
+        const expression = result.expression
+        assert(expression instanceof DotExpression)
+        assertIdentifierExpression(expression.left, 'a')
+        assertIdentifierExpression(expression.right, 'b')
     })
 
     test.each([

@@ -2,7 +2,7 @@ import {Constants as TokenConstants, Token} from '../token/token.ts'
 import {
     ArrayLiteral,
     BlockStatement,
-    BooleanLiteral, CallExpression,
+    BooleanLiteral, CallExpression, DotExpression,
     Expression,
     ExpressionStatement,
     FunctionLiteral,
@@ -33,6 +33,7 @@ enum OperatorPrecendence {
     PREFIX,
     CALL,
     INDEX,
+    DOT,
 }
 
 const TokenTypePrecedenceMapping = new Map<TokenType, OperatorPrecendence>([
@@ -46,6 +47,7 @@ const TokenTypePrecedenceMapping = new Map<TokenType, OperatorPrecendence>([
     [TokenType.ASTERISK, OperatorPrecendence.PRODUCT],
     [TokenType.LPAREN, OperatorPrecendence.CALL],
     [TokenType.LBRACKET, OperatorPrecendence.INDEX],
+    [TokenType.DOT, OperatorPrecendence.DOT],
 ]);
 
 export class Parser {
@@ -108,6 +110,7 @@ export class Parser {
 
         this.registerInfixParseFunction(TokenType.LPAREN, this.parseCallExpression)
 
+        this.registerInfixParseFunction(TokenType.DOT, this.parseDotExpression)
         this.registerInfixParseFunction(TokenType.LBRACKET, this.parseIndexExpression)
     }
 
@@ -466,6 +469,22 @@ export class Parser {
         return args
     }
 
+    private parseDotExpression(left: Expression): DotExpression | undefined {
+        const token = this._currentToken
+
+        this.nextToken()
+
+        const right = this.parseIdentifier()
+        if (!right) {
+            this.addParseError('parse dot expression failed.')
+            return
+        }
+
+        this.nextToken()
+
+        return new DotExpression(token, left, right)
+    }
+
     private parseIndexExpression(left: Expression): IndexExpression | undefined {
         const token = this._currentToken
 
@@ -483,7 +502,7 @@ export class Parser {
         return new IndexExpression(token, left, indexExpression)
     }
 
-    private parseIdentifier(): Expression | undefined {
+    private parseIdentifier(): Identifier | undefined {
         return new Identifier(this._currentToken, this._currentToken.literal)
     }
 

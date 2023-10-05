@@ -1,7 +1,7 @@
 import {Lexer} from '../lexer/lexer.ts'
 import {Parser} from '../parser/parser.ts'
 import {evaluate as evalCore, EvaluatingError} from './evaluator.ts'
-import {Array, Boolean, Function, Integer, Null, Object, String} from '../object/object.ts'
+import {F_Array, F_Boolean, F_Function, F_Integer, F_Null, F_Object, F_String} from '../object/f_Object.ts'
 import {assert, describe, expect, test} from 'vitest'
 
 describe('evaluate Integer', () => {
@@ -11,7 +11,7 @@ describe('evaluate Integer', () => {
     ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Integer)
+        assert(evaluated instanceof F_Integer)
         expect(evaluated.value).toBe(result)
     })
 })
@@ -23,7 +23,7 @@ describe('evaluate Boolean', () => {
     ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Boolean)
+        assert(evaluated instanceof F_Boolean)
         expect(evaluated.value).toBe(result)
     })
 })
@@ -35,7 +35,7 @@ describe('evaluate String', () => {
     ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof String)
+        assert(evaluated instanceof F_String)
         expect(evaluated.value).toBe(result)
     })
 })
@@ -53,7 +53,7 @@ describe('evaluate Array', () => {
     ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Array)
+        assert(evaluated instanceof F_Array)
         expect(evaluated.elements.map(x => x.inspect)).toEqual(result.map(x => x.toString()))
     })
 })
@@ -71,7 +71,7 @@ describe('evaluate PreFixExpression', () => {
     ])(`bang: evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Boolean)
+        assert(evaluated instanceof F_Boolean)
         expect(evaluated.value).toBe(result)
     })
 
@@ -83,7 +83,7 @@ describe('evaluate PreFixExpression', () => {
     ])(`minus: evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Integer)
+        assert(evaluated instanceof F_Integer)
         expect(evaluated.value).toBe(result)
     })
 })
@@ -108,7 +108,7 @@ describe('evaluate InFixExpression', () => {
     ])(`boolean operator: evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Boolean)
+        assert(evaluated instanceof F_Boolean)
         expect(evaluated.value).toBe(result)
     })
 
@@ -131,7 +131,7 @@ describe('evaluate InFixExpression', () => {
     ])(`number operator: evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Integer)
+        assert(evaluated instanceof F_Integer)
         expect(evaluated.value).toBe(result)
     })
 
@@ -141,7 +141,7 @@ describe('evaluate InFixExpression', () => {
     ])(`string operator: evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof String)
+        assert(evaluated instanceof F_String)
         expect(evaluated.value).toBe(result)
     })
 })
@@ -158,7 +158,7 @@ describe('evaluate IndexExpression', () => {
     ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Integer)
+        assert(evaluated instanceof F_Integer)
         expect(evaluated.value).toBe(result)
     })
 })
@@ -176,10 +176,10 @@ describe('evaluate IfExpression', () => {
         const evaluated = evaluate(input)
 
         if (result) {
-            assert(evaluated instanceof Integer)
+            assert(evaluated instanceof F_Integer)
             expect(evaluated.value).toBe(result)
         } else {
-            expect(evaluated).toBe(Null.Instance)
+            expect(evaluated).toBe(F_Null.Instance)
         }
     })
 })
@@ -211,7 +211,7 @@ describe('evaluate ReturnStatement', () => {
     ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Integer)
+        assert(evaluated instanceof F_Integer)
         expect(evaluated.value).toBe(result)
     })
 })
@@ -266,7 +266,7 @@ describe('variable binding', () => {
     (`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Integer)
+        assert(evaluated instanceof F_Integer)
         expect(evaluated.value).toBe(result)
     })
 
@@ -275,7 +275,7 @@ describe('variable binding', () => {
 
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Function)
+        assert(evaluated instanceof F_Function)
         expect(evaluated.parameters.map(x => x.value)).toEqual(['x'])
         expect(evaluated.body.toString()).toBe('(x + 2);')
         expect(evaluated.environment).not.toBeNull()
@@ -304,24 +304,27 @@ describe('evaluate Function call', () => {
     (`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Integer)
+        assert(evaluated instanceof F_Integer)
         expect(evaluated.value).toBe(result)
     })
 
     test.each([
         {input: `len("")`, result: 0},
+        {input: `"".length`, result: 0},
         {input: `len("four")`, result: 4},
+        {input: `"four".length`, result: 4},
         {input: `len("hello world")`, result: 11},
+        {input: `"hello world".length`, result: 11},
     ])
     (`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 
-        assert(evaluated instanceof Integer)
+        assert(evaluated instanceof F_Integer)
         expect(evaluated.value).toBe(result)
     })
 })
 
-function evaluate(input: string): Object {
+function evaluate(input: string): F_Object {
     const lexer = new Lexer(input)
     const parser = new Parser(lexer)
     const program = parser.parseProgram()
