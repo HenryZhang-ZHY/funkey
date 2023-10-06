@@ -65,6 +65,7 @@ describe('tokenize program', () => {
   10 != 9;
   [1, 2];
   a.b;
+  {"foo": "bar"};
 `;
 
 
@@ -151,6 +152,12 @@ describe('tokenize program', () => {
         new Token(TokenType.IDENT, 'a'),
         new Token(TokenType.DOT, '.'),
         new Token(TokenType.IDENT, 'b'),
+        new Token(TokenType.SEMICOLON, ';'),
+        new Token(TokenType.LBRACE, '{'),
+        new Token(TokenType.STRING, 'foo'),
+        new Token(TokenType.COLON, ':'),
+        new Token(TokenType.STRING, 'bar'),
+        new Token(TokenType.RBRACE, '}'),
         new Token(TokenType.SEMICOLON, ';'),
         new Token(TokenType.EOF, ''),
     ]

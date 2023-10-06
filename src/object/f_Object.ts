@@ -8,6 +8,8 @@ enum ObjectTypes {
     Integer = 'Integer',
     Boolean = 'Boolean',
     String = 'String',
+    Array = 'Array',
+    Map = 'Map',
     Function = 'Function',
     BuiltinFunction = 'BuiltInFunction',
     Null = 'Null'
@@ -138,7 +140,7 @@ export class F_Array extends F_Object {
     }
 
     override get type(): ObjectType {
-        return ObjectTypes.String
+        return ObjectTypes.Array
     }
 
     override get inspect(): string {
@@ -151,6 +153,36 @@ export class F_Array extends F_Object {
         }
         assert(other instanceof F_Array)
         return this._elements === other._elements
+    }
+}
+
+export class F_Map extends F_Object {
+    private readonly _map: Map<string, F_Object>
+
+    constructor(map: Map<string, F_Object>) {
+        super()
+        this._map = map
+    }
+
+    override get type(): ObjectType {
+        return ObjectTypes.Map
+    }
+
+    override get inspect(): string {
+        const entries = [...this._map.entries()].map(([key, value]) => `${key}:${value}`)
+        return `{${entries.join(', ')}}`
+    }
+
+    override equals(other: F_Object): boolean {
+        if (this.type !== other.type) {
+            return false
+        }
+        assert(other instanceof F_Map)
+        return this._map === other._map
+    }
+
+    get(key: F_String): F_Object {
+        return this._map.get(key.value) ?? F_Null.Instance
     }
 }
 

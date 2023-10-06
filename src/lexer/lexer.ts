@@ -86,6 +86,9 @@ export class Lexer {
             case ',':
                 token = this.generateNoLiteralToken(TokenType.COMMA)
                 break
+            case ':':
+                token = this.generateNoLiteralToken(TokenType.COLON)
+                break
             case ';':
                 token = this.generateNoLiteralToken(TokenType.SEMICOLON)
                 break

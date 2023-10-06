@@ -10,7 +10,7 @@ import {
     IfExpression, IndexExpression,
     InfixExpression,
     IntegerLiteral,
-    LetStatement,
+    LetStatement, MapLiteral,
     PrefixExpression,
     Program,
     ReturnStatement,
@@ -409,6 +409,42 @@ describe('FunctionLiteral', () => {
         assert(expression instanceof FunctionLiteral)
 
         expect(expression.parameters).toEqual(expectedParameters)
+    })
+})
+
+describe('MapLiteral', () => {
+    test('basic', () => {
+        const input = `{"one": 1, "two": 2, "three": 3}`
+
+        const result = parseStatement(input)
+
+        assert(result instanceof ExpressionStatement)
+
+        const expression = result.expression
+        assert(expression instanceof MapLiteral)
+
+        const entries = [...expression.map.entries()]
+        expect(entries.length).toBe(3)
+        assertStringLiteralExpression(entries[0][0], 'one')
+        assertIntegerLiteralExpression(entries[0][1], 1)
+        assertStringLiteralExpression(entries[1][0], 'two')
+        assertIntegerLiteralExpression(entries[1][1], 2)
+        assertStringLiteralExpression(entries[2][0], 'three')
+        assertIntegerLiteralExpression(entries[2][1], 3)
+    })
+
+    test('empty map', () => {
+        const input = `{}`
+
+        const result = parseStatement(input)
+
+        assert(result instanceof ExpressionStatement)
+
+        const expression = result.expression
+        assert(expression instanceof MapLiteral)
+
+        const entries = [...expression.map.entries()]
+        expect(entries.length).toBe(0)
     })
 })
 

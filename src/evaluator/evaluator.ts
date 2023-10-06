@@ -3,7 +3,7 @@ import {
     AstVisitor, BlockStatement,
     BooleanLiteral, CallExpression, DotExpression,
     ExpressionStatement, FunctionLiteral, Identifier, IfExpression, IndexExpression, InfixExpression,
-    IntegerLiteral, LetStatement,
+    IntegerLiteral, LetStatement, MapLiteral,
     Node,
     PrefixExpression,
     Program, ReturnStatement, StringLiteral
@@ -13,7 +13,7 @@ import {
     F_Boolean,
     F_BuiltinFunction,
     F_Function,
-    F_Integer,
+    F_Integer, F_Map,
     F_Null,
     F_Object,
     F_String,
@@ -336,6 +336,18 @@ class AstEvaluatorVisitor implements AstVisitor {
 
     visitArrayLiteral(x: ArrayLiteral) {
         this._result = new F_Array(x.elements.map(e => evaluate(e, this.environment)))
+    }
+
+    visitMapLiteral(x: MapLiteral) {
+        const result = new Map<string, F_Object>()
+        for (const [keyExpression, valueExpression] of x.map) {
+            const key = evaluate(keyExpression, this.environment)
+            if (!(key instanceof F_String)) {
+                throw new Error('invalid map key')
+            }
+            result.set(key.value, evaluate(valueExpression, this.environment))
+        }
+        this._result = new F_Map(result)
     }
 
     visitFunctionLiteral(x: FunctionLiteral) {

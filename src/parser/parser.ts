@@ -10,7 +10,7 @@ import {
     IfExpression, IndexExpression,
     InfixExpression,
     IntegerLiteral,
-    LetStatement,
+    LetStatement, MapLiteral,
     PrefixExpression,
     Program,
     ReturnStatement,
@@ -85,6 +85,8 @@ export class Parser {
         this.registerPrefixParseFunction(TokenType.LPAREN, this.parseGroupedExpression)
 
         this.registerPrefixParseFunction(TokenType.LBRACKET, this.parseArrayLiteralExpression)
+
+        this.registerPrefixParseFunction(TokenType.LBRACE, this.parseMapLiteralExpression)
 
         this.registerPrefixParseFunction(TokenType.IF, this.parseIfExpression)
 
@@ -293,6 +295,72 @@ export class Parser {
         }
 
         if (!this.assertNextTokenTypeIs(TokenType.RBRACKET)) {
+            return items
+        }
+        this.nextToken()
+
+        return items
+    }
+
+    private parseMapLiteralExpression(): MapLiteral | undefined {
+        const token = this._currentToken
+        const items = this.parseMapItems()
+        return new MapLiteral(token, items)
+    }
+
+    private parseMapItems(): Map<Expression, Expression> {
+        const items= new Map<Expression, Expression>
+
+        if (this._nextToken.type === TokenType.RBRACE) {
+            this.nextToken()
+            return items
+        }
+
+        this.nextToken()
+
+        const firstKey = this.parseExpression(OperatorPrecendence.LOWEST)
+        if (!firstKey) {
+            this.addParseError("parse map item failed")
+            return items
+        }
+        if (!this.assertNextTokenTypeIs(TokenType.COLON)) {
+            this.addParseError("parse map item failed")
+            return items
+        }
+        this.nextToken()
+        this.nextToken()
+        const firstValue = this.parseExpression(OperatorPrecendence.LOWEST)
+        if (!firstValue) {
+            this.addParseError("parse map item failed")
+            return items
+        }
+        items.set(firstKey, firstValue)
+
+
+        while (this._nextToken.type === TokenType.COMMA) {
+            this.nextToken()
+            this.nextToken()
+
+            const key = this.parseExpression(OperatorPrecendence.LOWEST)
+            if (!key) {
+                this.addParseError("parse map item failed")
+                return items
+            }
+            if (!this.assertNextTokenTypeIs(TokenType.COLON)) {
+                this.addParseError("parse map item failed")
+                return items
+            }
+            this.nextToken()
+            this.nextToken()
+            const value = this.parseExpression(OperatorPrecendence.LOWEST)
+            if (!value) {
+                this.addParseError("parse map item failed")
+                return items
+            }
+            items.set(key, value)
+        }
+
+        if (!this.assertNextTokenTypeIs(TokenType.RBRACE)) {
             return items
         }
         this.nextToken()

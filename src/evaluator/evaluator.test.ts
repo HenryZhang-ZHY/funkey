@@ -1,7 +1,7 @@
 import {Lexer} from '../lexer/lexer.ts'
 import {Parser} from '../parser/parser.ts'
 import {evaluate as evalCore, EvaluatingError} from './evaluator.ts'
-import {F_Array, F_Boolean, F_Function, F_Integer, F_Null, F_Object, F_String} from '../object/f_Object.ts'
+import {F_Array, F_Boolean, F_Function, F_Integer, F_Map, F_Null, F_Object, F_String} from '../object/f_Object.ts'
 import {assert, describe, expect, test} from 'vitest'
 
 describe('evaluate Integer', () => {
@@ -55,6 +55,16 @@ describe('evaluate Array', () => {
 
         assert(evaluated instanceof F_Array)
         expect(evaluated.elements.map(x => x.inspect)).toEqual(result.map(x => x.toString()))
+    })
+})
+
+describe('evaluate Map', () => {
+    test('basic', () => {
+        const evaluated = evaluate(`{"a": 1, "b"+"c": 2}`)
+
+        assert(evaluated instanceof F_Map)
+        expect(evaluated.get(new F_String('a'))).toEqual(new F_Integer(1))
+        expect(evaluated.get(new F_String('bc'))).toEqual(new F_Integer(2))
     })
 })
 

@@ -15,6 +15,7 @@ export interface AstVisitor {
     visitBooleanLiteral: (x: BooleanLiteral) => void
     visitStringLiteral: (x: StringLiteral) => void
     visitArrayLiteral: (x: ArrayLiteral) => void
+    visitMapLiteral: (x: MapLiteral) => void
     visitFunctionLiteral: (x: FunctionLiteral) => void
     visitIfExpression: (x: IfExpression) => void
     visitIdentifier: (x: Identifier) => void
@@ -203,6 +204,29 @@ export class ArrayLiteral implements Expression {
 
     accept(visitor: AstVisitor): void {
         visitor.visitArrayLiteral(this)
+    }
+}
+
+export class MapLiteral implements Expression {
+    private readonly token: Token
+    readonly map: Map<Expression, Expression>
+
+    constructor(token: Token, map: Map<Expression, Expression>) {
+        this.token = token
+        this.map = map
+    }
+
+    get tokenLiteral(): string {
+        return this.token.literal
+    }
+
+    toString(): string {
+        const entries = [...this.map.entries()].map(([key, value]) => `${key}:${value}`)
+        return `{${entries.join(', ')}}`
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitMapLiteral(this)
     }
 }
 
