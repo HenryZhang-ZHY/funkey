@@ -165,6 +165,19 @@ describe('evaluate IndexExpression', () => {
         {input: "let myArray = [1, 2, 3]; myArray[2];", result: 3},
         {input: "let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", result: 6},
         {input: "let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", result: 2,},
+        {input: `let myMap = {"a": 1, "b"+"c": 2}; myMap["a"]`, result: 1,},
+    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+        const evaluated = evaluate(input)
+
+        assert(evaluated instanceof F_Integer)
+        expect(evaluated.value).toBe(result)
+    })
+})
+
+describe('evaluate DotExpression', () => {
+    test.each([
+        {input: `let myMap = {"a": 1, "b"+"c": 2}; myMap.a`, result: 1,},
+        {input: `let myMap = {"a": 1, "b"+"c": 2}; myMap.bc`, result: 2,},
     ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
         const evaluated = evaluate(input)
 

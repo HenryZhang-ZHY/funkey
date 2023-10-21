@@ -285,8 +285,14 @@ class AstEvaluatorVisitor implements AstVisitor {
 
     visitDotExpression(x: DotExpression) {
         const left = evaluate(x.left, this.environment)
-        // @ts-ignore
-        const result = left[x.right.value]
+        let result
+        if (left instanceof F_Map) {
+            // @ts-ignore
+            result = left.get(new F_String(x.right.value))
+        } else {
+            // @ts-ignore
+            result = left[x.right.value]
+        }
 
         if (!(result instanceof F_Object)) {
             throw new Error('invalid operation')
@@ -299,14 +305,32 @@ class AstEvaluatorVisitor implements AstVisitor {
         const left = evaluate(x.left, this.environment)
         const index = evaluate(x.index, this.environment)
 
-        if (!(left instanceof F_Array) || !(index instanceof F_Integer)) {
+        if (left instanceof F_Array) {
+            this._result = evaluateArrayIndex(left, index)
+        } else if (left instanceof F_Map) {
+            this._result = evaluateMapIndex(left, index)
+        } else {
             throw new Error(`index expression is not valid`)
         }
-        if (index.value < 0 || index.value > left.elements.length) {
-            throw new Error(`index out of bound`)
+
+        function evaluateArrayIndex(array: F_Array, index: F_Object){
+            if (!(index instanceof  F_Integer)) {
+                throw new Error(`index expression is not valid`)
+            }
+            if (index.value < 0 || index.value > array.elements.length) {
+                throw new Error(`index out of bound`)
+            }
+
+            return array.elements[index.value]
         }
 
-        this._result = left.elements[index.value]
+        function evaluateMapIndex(map: F_Map, index: F_Object){
+            if (!(index instanceof  F_String)) {
+                throw new Error(`index expression is not valid`)
+            }
+
+            return map.get(index)
+        }
     }
 
     visitIfExpression(x: IfExpression) {
