@@ -1,6 +1,6 @@
-import {assert} from "vitest";
-import {BlockStatement, Identifier} from "../ast/ast";
-import {Environment} from "../evaluator/evaluator";
+import {assert} from 'vitest'
+import {BlockStatement, Identifier} from '../ast/ast'
+import {Environment} from '../evaluator/evaluator'
 
 export type ObjectType = string
 

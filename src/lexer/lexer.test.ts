@@ -17,7 +17,7 @@ describe('nextToken', () => {
             expect(token.literal).toBe(expectedToken.literal)
         })
 
-    test(`input is '5;'`, () => {
+    test('input is \'5;\'', () => {
         const lexer = new Lexer('5;')
 
         const [token1, token2] = [lexer.nextToken(), lexer.nextToken()]
@@ -30,10 +30,9 @@ describe('nextToken', () => {
     })
 
     test.each([
-        {input: `"foo"`, result: 'foo'},
-        {input: `"hello world"`, result: 'hello world'}
-    ])
-    ('parse string [$input]', ({input, result}) => {
+        {input: '"foo"', result: 'foo'},
+        {input: '"hello world"', result: 'hello world'}
+    ])('parse string [$input]', ({input, result}) => {
         const lexer = new Lexer(input)
 
         const token = lexer.nextToken()
@@ -66,7 +65,7 @@ describe('tokenize program', () => {
   [1, 2];
   a.b;
   {"foo": "bar"};
-`;
+`
 
 
     const expectedTokenSecquence = [

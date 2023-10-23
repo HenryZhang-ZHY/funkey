@@ -1,7 +1,7 @@
-import {isAsciiDigit, isAsciiLetter, isWhiteSpace} from "../utils/stringUtils"
-import {Token} from "../token/token"
-import {TokenType} from "../token/tokenType"
-import {KeywordsToTokenTypeMapping} from "../token/keywords"
+import {isAsciiDigit, isAsciiLetter, isWhiteSpace} from '../utils/stringUtils'
+import {Token} from '../token/token'
+import {TokenType} from '../token/tokenType'
+import {KeywordsToTokenTypeMapping} from '../token/keywords'
 
 const EOF = '\0'
 
@@ -39,7 +39,7 @@ export class Lexer {
     nextToken(): Token {
         this.eatWhiteSpaces()
 
-        let token: Token | undefined;
+        let token: Token | undefined
         switch (this.char) {
             case EOF:
                 token = new Token(TokenType.EOF, '')

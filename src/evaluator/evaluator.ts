@@ -7,7 +7,7 @@ import {
     Node,
     PrefixExpression,
     Program, ReturnStatement, StringLiteral
-} from "../ast/ast"
+} from '../ast/ast'
 import {
     F_Array,
     F_Boolean,
@@ -18,8 +18,8 @@ import {
     F_Object,
     F_String,
     packNativeValue
-} from "../object/f_Object"
-import {assert} from "vitest"
+} from '../object/f_Object'
+import {assert} from 'vitest'
 
 class ReturnTrap {
     readonly value: F_Object
@@ -59,7 +59,7 @@ export class Environment {
     declareVariable(identifier: string) {
         const box = this.getVariableBox(identifier)
         if (box) {
-            throw new Error(`identifier has been declared`)
+            throw new Error('identifier has been declared')
         }
 
         this.variableMap.set(identifier, new Box<F_Object>(F_Null.Instance))
@@ -157,7 +157,7 @@ class AstEvaluatorVisitor implements AstVisitor {
     }
 
     visitLetStatement(x: LetStatement) {
-        const identifier = x.identifier.value;
+        const identifier = x.identifier.value
         this.environment.declareVariable(identifier)
         if (x.expression) {
             this.environment.setVariableValue(identifier, evaluate(x.expression, this.environment))
@@ -226,26 +226,26 @@ class AstEvaluatorVisitor implements AstVisitor {
 
         function evaluateArithmeticExpression(left: F_Integer, operator: '+' | '-' | '*' | '/', right: F_Integer): F_Integer {
             switch (operator) {
-                case "+":
+                case '+':
                     return packNativeValue(left.value + right.value)
-                case "-":
+                case '-':
                     return packNativeValue(left.value - right.value)
-                case "*":
+                case '*':
                     return packNativeValue(left.value * right.value)
-                case "/":
+                case '/':
                     return packNativeValue(left.value / right.value)
             }
         }
 
         function evaluateComparingExpression(left: F_Integer, operator: '>' | '<' | '==' | '!=', right: F_Integer): F_Boolean {
             switch (operator) {
-                case ">":
+                case '>':
                     return packNativeValue(left.value > right.value)
-                case "<":
+                case '<':
                     return packNativeValue(left.value < right.value)
-                case "==":
+                case '==':
                     return packNativeValue(left.value == right.value)
-                case "!=":
+                case '!=':
                     return packNativeValue(left.value != right.value)
             }
         }
@@ -275,7 +275,7 @@ class AstEvaluatorVisitor implements AstVisitor {
 
         const environment = new Environment(fn.environment)
         fn.parameters.forEach((parameter, index) => {
-            const variableName = parameter.value;
+            const variableName = parameter.value
             environment.declareVariable(variableName)
             environment.setVariableValue(variableName, args[index])
         })
@@ -287,9 +287,9 @@ class AstEvaluatorVisitor implements AstVisitor {
         const left = evaluate(x.left, this.environment)
         let result
         if (left instanceof F_Map) {
-            // @ts-ignore
             result = left.get(new F_String(x.right.value))
         } else {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             result = left[x.right.value]
         }
@@ -310,15 +310,15 @@ class AstEvaluatorVisitor implements AstVisitor {
         } else if (left instanceof F_Map) {
             this._result = evaluateMapIndex(left, index)
         } else {
-            throw new Error(`index expression is not valid`)
+            throw new Error('index expression is not valid')
         }
 
         function evaluateArrayIndex(array: F_Array, index: F_Object){
             if (!(index instanceof  F_Integer)) {
-                throw new Error(`index expression is not valid`)
+                throw new Error('index expression is not valid')
             }
             if (index.value < 0 || index.value > array.elements.length) {
-                throw new Error(`index out of bound`)
+                throw new Error('index out of bound')
             }
 
             return array.elements[index.value]
@@ -326,7 +326,7 @@ class AstEvaluatorVisitor implements AstVisitor {
 
         function evaluateMapIndex(map: F_Map, index: F_Object){
             if (!(index instanceof  F_String)) {
-                throw new Error(`index expression is not valid`)
+                throw new Error('index expression is not valid')
             }
 
             return map.get(index)

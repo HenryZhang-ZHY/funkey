@@ -12,7 +12,7 @@ export function isAsciiLetter(character: string): boolean {
     }
 
     const codepoint = character.charCodeAt(0)
-    return (codepoint >= 65 && codepoint <= 90) || (codepoint >= 97 && codepoint <= 122);
+    return (codepoint >= 65 && codepoint <= 90) || (codepoint >= 97 && codepoint <= 122)
 }
 
 export function isAsciiDigit(character: string): boolean {

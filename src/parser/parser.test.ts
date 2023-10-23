@@ -19,8 +19,8 @@ import {
 } from '../ast/ast'
 import {Lexer} from '../lexer/lexer'
 import {Parser} from './parser'
-import {TokenType} from "../token/tokenType"
-import {Token} from "../token/token"
+import {TokenType} from '../token/tokenType'
+import {Token} from '../token/token'
 
 type LiteralExpressionValue = number | boolean | string
 type Operator = string
@@ -188,104 +188,104 @@ describe('ExpressionStatement', () => {
 
     test.each([
         {
-            statement: "-a * b",
-            output: "((-a) * b)",
+            statement: '-a * b',
+            output: '((-a) * b)',
         },
         {
-            statement: "!-a",
-            output: "(!(-a))",
+            statement: '!-a',
+            output: '(!(-a))',
         },
         {
-            statement: "a + b + c",
-            output: "((a + b) + c)",
+            statement: 'a + b + c',
+            output: '((a + b) + c)',
         },
         {
-            statement: "a + b - c",
-            output: "((a + b) - c)",
+            statement: 'a + b - c',
+            output: '((a + b) - c)',
         },
         {
-            statement: "a * b * c",
-            output: "((a * b) * c)",
+            statement: 'a * b * c',
+            output: '((a * b) * c)',
         },
         {
-            statement: "a * b / c",
-            output: "((a * b) / c)",
+            statement: 'a * b / c',
+            output: '((a * b) / c)',
         },
         {
-            statement: "a + b / c",
-            output: "(a + (b / c))",
+            statement: 'a + b / c',
+            output: '(a + (b / c))',
         },
         {
-            statement: "a + b * c + d / e - f",
-            output: "(((a + (b * c)) + (d / e)) - f)",
+            statement: 'a + b * c + d / e - f',
+            output: '(((a + (b * c)) + (d / e)) - f)',
         },
         {
-            statement: "5 > 4 == 3 < 4",
-            output: "((5 > 4) == (3 < 4))",
+            statement: '5 > 4 == 3 < 4',
+            output: '((5 > 4) == (3 < 4))',
         },
         {
-            statement: "5 < 4 != 3 > 4",
-            output: "((5 < 4) != (3 > 4))",
+            statement: '5 < 4 != 3 > 4',
+            output: '((5 < 4) != (3 > 4))',
         },
         {
-            statement: "3 + 4 * 5 == 3 * 1 + 4 * 5",
-            output: "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+            statement: '3 + 4 * 5 == 3 * 1 + 4 * 5',
+            output: '((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))',
         },
         {
-            statement: "true",
-            output: "true",
+            statement: 'true',
+            output: 'true',
         },
         {
-            statement: "false",
-            output: "false",
+            statement: 'false',
+            output: 'false',
         },
         {
-            statement: "3 > 5 == false",
-            output: "((3 > 5) == false)",
+            statement: '3 > 5 == false',
+            output: '((3 > 5) == false)',
         },
         {
-            statement: "3 < 5 == true",
-            output: "((3 < 5) == true)",
+            statement: '3 < 5 == true',
+            output: '((3 < 5) == true)',
         },
         {
-            statement: "1 + (2 + 3) + 4",
-            output: "((1 + (2 + 3)) + 4)",
+            statement: '1 + (2 + 3) + 4',
+            output: '((1 + (2 + 3)) + 4)',
         },
         {
-            statement: "(5 + 5) * 2",
-            output: "((5 + 5) * 2)",
+            statement: '(5 + 5) * 2',
+            output: '((5 + 5) * 2)',
         },
         {
-            statement: "2 / (5 + 5)",
-            output: "(2 / (5 + 5))",
+            statement: '2 / (5 + 5)',
+            output: '(2 / (5 + 5))',
         },
         {
-            statement: "-(5 + 5)",
-            output: "(-(5 + 5))",
+            statement: '-(5 + 5)',
+            output: '(-(5 + 5))',
         },
         {
-            statement: "!(true == true)",
-            output: "(!(true == true))",
+            statement: '!(true == true)',
+            output: '(!(true == true))',
         },
         {
-            statement: "a + add(b * c) + d",
-            output: "((a + add((b * c))) + d)",
+            statement: 'a + add(b * c) + d',
+            output: '((a + add((b * c))) + d)',
         },
         {
-            statement: "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
-            output: "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
+            statement: 'add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))',
+            output: 'add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))',
         },
         {
-            statement: "add(a + b + c * d / f + g)",
-            output: "add((((a + b) + ((c * d) / f)) + g))",
+            statement: 'add(a + b + c * d / f + g)',
+            output: 'add((((a + b) + ((c * d) / f)) + g))',
         },
         {
-            statement: "a * [1, 2, 3, 4][b * c] * d",
-            output: "((a * ([1, 2, 3, 4][(b * c)])) * d)",
+            statement: 'a * [1, 2, 3, 4][b * c] * d',
+            output: '((a * ([1, 2, 3, 4][(b * c)])) * d)',
         },
         {
-            statement: "add(a * b[2], b[1], 2 * [1, 2][1])",
-            output: "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))",
+            statement: 'add(a * b[2], b[1], 2 * [1, 2][1])',
+            output: 'add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))',
         },
     ])('operator precedence parsing: input:[$statement], output:[$output]', ({statement, output}) => {
         const result = parseStatement(statement)
@@ -373,7 +373,7 @@ describe('IfExpression', () => {
 
 describe('FunctionLiteral', () => {
     test('basic', () => {
-        const input = `fn(x, y) { x + y; }`
+        const input = 'fn(x, y) { x + y; }'
 
         const result = parseStatement(input)
 
@@ -385,7 +385,7 @@ describe('FunctionLiteral', () => {
         const expectedParameters = [identifierLiteral('x'), identifierLiteral('y')]
         expect(expression.parameters).toEqual(expectedParameters)
 
-        const bodyStatement = expression.body.statements[0];
+        const bodyStatement = expression.body.statements[0]
         assertInfixExpressionStatement(bodyStatement, 'x', '+', 'y')
 
         expect(result.toString()).toBe(`fn (x, y) {
@@ -414,7 +414,7 @@ describe('FunctionLiteral', () => {
 
 describe('MapLiteral', () => {
     test('basic', () => {
-        const input = `{"one": 1, "two": 2, "three": 3}`
+        const input = '{"one": 1, "two": 2, "three": 3}'
 
         const result = parseStatement(input)
 
@@ -434,7 +434,7 @@ describe('MapLiteral', () => {
     })
 
     test('empty map', () => {
-        const input = `{}`
+        const input = '{}'
 
         const result = parseStatement(input)
 
@@ -450,7 +450,7 @@ describe('MapLiteral', () => {
 
 describe('CallExpression', () => {
     test('basic', () => {
-        const input = `add(1, 2 * 3, 4 + 5);`
+        const input = 'add(1, 2 * 3, 4 + 5);'
 
         const result = parseStatement(input)
 
@@ -459,7 +459,7 @@ describe('CallExpression', () => {
         const expression = result.expression
         assert(expression instanceof CallExpression)
 
-        assertIdentifierExpression(expression.fn, "add")
+        assertIdentifierExpression(expression.fn, 'add')
 
         assertIntegerLiteralExpression(expression.args[0], 1)
         assertInfixExpression(expression.args[1], 2, '*', 3)
@@ -467,7 +467,7 @@ describe('CallExpression', () => {
     })
 
     test('call immediately', () => {
-        const input = `fn (a, b) { a + b }(1, 2);`
+        const input = 'fn (a, b) { a + b }(1, 2);'
 
         const result = parseStatement(input)
 
@@ -493,16 +493,16 @@ function identifierLiteral(value: string) {
 function parseStatement(statement: string) {
     const program = parseProgram(statement)
 
-    return program.statements[0];
+    return program.statements[0]
 }
 
 function parseProgram(input: string, expectedErrorCounts: number = 0): Program {
     const lexer = new Lexer(input)
     const parser = new Parser(lexer)
 
-    const program = parser.parseProgram();
+    const program = parser.parseProgram()
 
-    expect(parser.errors.length).toBe(expectedErrorCounts);
+    expect(parser.errors.length).toBe(expectedErrorCounts)
 
     return program
 }

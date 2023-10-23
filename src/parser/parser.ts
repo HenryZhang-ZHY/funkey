@@ -17,8 +17,8 @@ import {
     Statement, StringLiteral
 } from '../ast/ast'
 import {Lexer} from '../lexer/lexer'
-import {TokenType} from "../token/tokenType"
-import {assert} from "vitest"
+import {TokenType} from '../token/tokenType'
+import {assert} from 'vitest'
 
 type PrefixParseFunction = () => Expression | undefined
 type InfixParseFunction = (leftExpression: Expression) => Expression | undefined
@@ -48,7 +48,7 @@ const TokenTypePrecedenceMapping = new Map<TokenType, OperatorPrecendence>([
     [TokenType.LPAREN, OperatorPrecendence.CALL],
     [TokenType.LBRACKET, OperatorPrecendence.INDEX],
     [TokenType.DOT, OperatorPrecendence.DOT],
-]);
+])
 
 export class Parser {
     private readonly lexer: Lexer
@@ -61,10 +61,10 @@ export class Parser {
     _nextToken: Token = TokenConstants.EOF
 
     constructor(lexer: Lexer) {
-        this.registerPrefixParseFunctions();
-        this.registerInfixParseFunctions();
+        this.registerPrefixParseFunctions()
+        this.registerInfixParseFunctions()
 
-        this.lexer = lexer;
+        this.lexer = lexer
 
         this.nextToken()
         this.nextToken()
@@ -171,7 +171,7 @@ export class Parser {
         this.nextToken()
         this.nextToken()
 
-        const expression = this.parseExpression(OperatorPrecendence.LOWEST);
+        const expression = this.parseExpression(OperatorPrecendence.LOWEST)
 
         if (!this.assertNextTokenTypeIs(TokenType.SEMICOLON)) {
             return
@@ -207,21 +207,21 @@ export class Parser {
     }
 
     private parseBlockStatement(): BlockStatement | undefined {
-        const token = this._currentToken;
-        const blockStatement = new BlockStatement(token);
+        const token = this._currentToken
+        const blockStatement = new BlockStatement(token)
 
         this.nextToken()
 
         while (this._currentToken.type !== TokenType.RBRACE && this._currentToken.type !== TokenType.EOF) {
-            const statement = this.parseStatement();
+            const statement = this.parseStatement()
             if (statement) {
-                blockStatement.addStatement(statement);
+                blockStatement.addStatement(statement)
             }
 
             this.nextToken()
         }
 
-        return blockStatement;
+        return blockStatement
     }
 
     private parseExpression(precedence: number = OperatorPrecendence.LOWEST): Expression | undefined {
@@ -277,7 +277,7 @@ export class Parser {
 
         const first = this.parseExpression(OperatorPrecendence.LOWEST)
         if (!first) {
-            this.addParseError("parse array item failed")
+            this.addParseError('parse array item failed')
             return items
         }
         items.push(first)
@@ -288,7 +288,7 @@ export class Parser {
 
             const item = this.parseExpression(OperatorPrecendence.LOWEST)
             if (!item) {
-                this.addParseError("parse array item failed")
+                this.addParseError('parse array item failed')
                 return items
             }
             items.push(item)
@@ -320,18 +320,18 @@ export class Parser {
 
         const firstKey = this.parseExpression(OperatorPrecendence.LOWEST)
         if (!firstKey) {
-            this.addParseError("parse map item failed")
+            this.addParseError('parse map item failed')
             return items
         }
         if (!this.assertNextTokenTypeIs(TokenType.COLON)) {
-            this.addParseError("parse map item failed")
+            this.addParseError('parse map item failed')
             return items
         }
         this.nextToken()
         this.nextToken()
         const firstValue = this.parseExpression(OperatorPrecendence.LOWEST)
         if (!firstValue) {
-            this.addParseError("parse map item failed")
+            this.addParseError('parse map item failed')
             return items
         }
         items.set(firstKey, firstValue)
@@ -343,18 +343,18 @@ export class Parser {
 
             const key = this.parseExpression(OperatorPrecendence.LOWEST)
             if (!key) {
-                this.addParseError("parse map item failed")
+                this.addParseError('parse map item failed')
                 return items
             }
             if (!this.assertNextTokenTypeIs(TokenType.COLON)) {
-                this.addParseError("parse map item failed")
+                this.addParseError('parse map item failed')
                 return items
             }
             this.nextToken()
             this.nextToken()
             const value = this.parseExpression(OperatorPrecendence.LOWEST)
             if (!value) {
-                this.addParseError("parse map item failed")
+                this.addParseError('parse map item failed')
                 return items
             }
             items.set(key, value)
@@ -369,7 +369,7 @@ export class Parser {
     }
 
     private parseIfExpression(): Expression | undefined {
-        const token = this._currentToken;
+        const token = this._currentToken
 
         this.nextToken()
 
@@ -380,7 +380,7 @@ export class Parser {
 
         const condition = this.parseExpression()
         if (!condition) {
-            this.addParseError("parse condition failed")
+            this.addParseError('parse condition failed')
             return
         }
 
@@ -396,7 +396,7 @@ export class Parser {
 
         const consequence = this.parseBlockStatement()
         if (!consequence) {
-            this.addParseError("parse consequence failed")
+            this.addParseError('parse consequence failed')
             return
         }
 
@@ -412,7 +412,7 @@ export class Parser {
 
         const alternative = this.parseBlockStatement()
         if (!alternative) {
-            this.addParseError("parse alternative failed")
+            this.addParseError('parse alternative failed')
             return
         }
 
@@ -420,7 +420,7 @@ export class Parser {
     }
 
     private parseFunctionLiteral(): FunctionLiteral | undefined {
-        const token = this._currentToken;
+        const token = this._currentToken
 
         this.nextToken()
 
@@ -431,7 +431,7 @@ export class Parser {
 
         const parameters = this.parseParameters()
         if (!parameters) {
-            this.addParseError("parse parameters failed")
+            this.addParseError('parse parameters failed')
             return
         }
 
@@ -446,7 +446,7 @@ export class Parser {
 
         const body = this.parseBlockStatement()
         if (!body) {
-            this.addParseError("parse function body failed")
+            this.addParseError('parse function body failed')
             return
         }
 
@@ -475,7 +475,7 @@ export class Parser {
         this.nextToken()
         const expression = this.parseExpression(OperatorPrecendence.PREFIX)
         if (!expression) {
-            this.addParseError(`parse expression failed`)
+            this.addParseError('parse expression failed')
             return
         }
 
@@ -488,7 +488,7 @@ export class Parser {
         this.nextToken()
         const rightExpression = this.parseExpression(precedence)
         if (!rightExpression) {
-            this.addParseError(`parse right side expression failed`)
+            this.addParseError('parse right side expression failed')
             return
         }
         return new InfixExpression(token, leftExpression, token.literal, rightExpression)
@@ -512,7 +512,7 @@ export class Parser {
 
         const firstArg = this.parseExpression(OperatorPrecendence.LOWEST)
         if (!firstArg) {
-            this.addParseError("parse argument failed")
+            this.addParseError('parse argument failed')
             return args
         }
         args.push(firstArg)
@@ -523,7 +523,7 @@ export class Parser {
 
             const arg = this.parseExpression(OperatorPrecendence.LOWEST)
             if (!arg) {
-                this.addParseError("parse argument failed")
+                this.addParseError('parse argument failed')
                 return args
             }
             args.push(arg)

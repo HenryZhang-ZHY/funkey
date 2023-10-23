@@ -8,7 +8,7 @@ describe('evaluate Integer', () => {
     test.each([
         {input: '10', result: 10},
         {input: '999', result: 999}
-    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Integer)
@@ -20,7 +20,7 @@ describe('evaluate Boolean', () => {
     test.each([
         {input: 'true', result: true},
         {input: 'false', result: false}
-    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Boolean)
@@ -30,9 +30,9 @@ describe('evaluate Boolean', () => {
 
 describe('evaluate String', () => {
     test.each([
-        {input: `"foo"`, result: 'foo'},
-        {input: `"lorem string"`, result: 'lorem string'}
-    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+        {input: '"foo"', result: 'foo'},
+        {input: '"lorem string"', result: 'lorem string'}
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_String)
@@ -42,15 +42,15 @@ describe('evaluate String', () => {
 
 describe('evaluate Array', () => {
     test.each([
-        {input: `[1, 2 + 2, 3 * 3]`, result: [1, 4, 9]},
+        {input: '[1, 2 + 2, 3 * 3]', result: [1, 4, 9]},
         {
             input: `
         let q = 1;
         [q]`,
             result: [1]
         },
-        {input: `[]`, result: []}
-    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+        {input: '[]', result: []}
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Array)
@@ -60,7 +60,7 @@ describe('evaluate Array', () => {
 
 describe('evaluate Map', () => {
     test('basic', () => {
-        const evaluated = evaluate(`{"a": 1, "b"+"c": 2}`)
+        const evaluated = evaluate('{"a": 1, "b"+"c": 2}')
 
         assert(evaluated instanceof F_Map)
         expect(evaluated.get(new F_String('a'))).toEqual(new F_Integer(1))
@@ -78,7 +78,7 @@ describe('evaluate PreFixExpression', () => {
         {input: '!!5', result: true},
         {input: '!0', result: true},
         {input: '!!0', result: false},
-    ])(`bang: evaluate [$input] should get [$result]`, ({input, result}) => {
+    ])('bang: evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Boolean)
@@ -90,7 +90,7 @@ describe('evaluate PreFixExpression', () => {
         {input: '-0', result: -0},
         {input: '-5', result: -5},
         {input: '-10000', result: -10000},
-    ])(`minus: evaluate [$input] should get [$result]`, ({input, result}) => {
+    ])('minus: evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Integer)
@@ -112,10 +112,10 @@ describe('evaluate InFixExpression', () => {
         {input: '(1 < 2) == false', result: false},
         {input: '(1 > 2) == true', result: false},
         {input: '(1 > 2) == false', result: true},
-        {input: `"foo" == "foo"`, result: true},
-        {input: `"hello" == "world"`, result: false},
-        {input: `"hello" + " world" == "hello world"`, result: true},
-    ])(`boolean operator: evaluate [$input] should get [$result]`, ({input, result}) => {
+        {input: '"foo" == "foo"', result: true},
+        {input: '"hello" == "world"', result: false},
+        {input: '"hello" + " world" == "hello world"', result: true},
+    ])('boolean operator: evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Boolean)
@@ -138,7 +138,7 @@ describe('evaluate InFixExpression', () => {
         {input: '3 * 3 * 3 + 10', result: 37},
         {input: '3 * (3 * 3) + 10', result: 37},
         {input: '(5 + 10 * 2 + 15 / 3) * 2 + -10', result: 50},
-    ])(`number operator: evaluate [$input] should get [$result]`, ({input, result}) => {
+    ])('number operator: evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Integer)
@@ -146,9 +146,9 @@ describe('evaluate InFixExpression', () => {
     })
 
     test.each([
-        {input: `"hello" + " world"`, result: 'hello world'},
-        {input: `"a" + "b" + "c"`, result: 'abc'},
-    ])(`string operator: evaluate [$input] should get [$result]`, ({input, result}) => {
+        {input: '"hello" + " world"', result: 'hello world'},
+        {input: '"a" + "b" + "c"', result: 'abc'},
+    ])('string operator: evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_String)
@@ -158,15 +158,15 @@ describe('evaluate InFixExpression', () => {
 
 describe('evaluate IndexExpression', () => {
     test.each([
-        {input: `[1, 2 + 2, 3 * 3][0]`, result: 1},
-        {input: `[1, 2 + 2, 3 * 3][1 * 1]`, result: 4},
-        {input: `[1, 2 + 2, 3 * 3][1 + 1]`, result: 9},
-        {input: "let i = 0; [1][i];", result: 1},
-        {input: "let myArray = [1, 2, 3]; myArray[2];", result: 3},
-        {input: "let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", result: 6},
-        {input: "let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", result: 2,},
-        {input: `let myMap = {"a": 1, "b"+"c": 2}; myMap["a"]`, result: 1,},
-    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+        {input: '[1, 2 + 2, 3 * 3][0]', result: 1},
+        {input: '[1, 2 + 2, 3 * 3][1 * 1]', result: 4},
+        {input: '[1, 2 + 2, 3 * 3][1 + 1]', result: 9},
+        {input: 'let i = 0; [1][i];', result: 1},
+        {input: 'let myArray = [1, 2, 3]; myArray[2];', result: 3},
+        {input: 'let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];', result: 6},
+        {input: 'let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]', result: 2,},
+        {input: 'let myMap = {"a": 1, "b"+"c": 2}; myMap["a"]', result: 1,},
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Integer)
@@ -176,9 +176,9 @@ describe('evaluate IndexExpression', () => {
 
 describe('evaluate DotExpression', () => {
     test.each([
-        {input: `let myMap = {"a": 1, "b"+"c": 2}; myMap.a`, result: 1,},
-        {input: `let myMap = {"a": 1, "b"+"c": 2}; myMap.bc`, result: 2,},
-    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+        {input: 'let myMap = {"a": 1, "b"+"c": 2}; myMap.a', result: 1,},
+        {input: 'let myMap = {"a": 1, "b"+"c": 2}; myMap.bc', result: 2,},
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Integer)
@@ -195,7 +195,7 @@ describe('evaluate IfExpression', () => {
         {input: 'if (1 > 2) { 10 }', result: null},
         {input: 'if (1 > 2) { 10 } else { 20 }', result: 20},
         {input: 'if (1 < 2) { 10 } else { 20 }', result: 10},
-    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         if (result) {
@@ -231,7 +231,7 @@ describe('evaluate ReturnStatement', () => {
                     }
         `, result: 1
         },
-    ])(`evaluate [$input] should get [$result]`, ({input, result}) => {
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Integer)
@@ -245,7 +245,7 @@ describe('error handling', () => {
         {input: '5 + true; 5;', expectedErrorMessage: 'type mismatch: Integer + Boolean'},
         {input: '-true', expectedErrorMessage: 'unknown operator: -Boolean'},
         {input: 'true + false;', expectedErrorMessage: 'unknown operator: Boolean + Boolean'},
-        {input: `"hello" - " world"`, expectedErrorMessage: 'unknown operator: String - String'},
+        {input: '"hello" - " world"', expectedErrorMessage: 'unknown operator: String - String'},
         {input: '5; true + false; 5', expectedErrorMessage: 'unknown operator: Boolean + Boolean',},
         {input: 'if (10 > 1) { true + false; }', expectedErrorMessage: 'unknown operator: Boolean + Boolean'},
         {
@@ -261,11 +261,10 @@ describe('error handling', () => {
             input: 'foo',
             expectedErrorMessage: 'identifier not found: foo'
         },
-        {input: `len(1)`, expectedErrorMessage: 'argument to `len` not supported, got Integer'},
-        {input: `len("one", "two")`, expectedErrorMessage: 'wrong number of arguments. got=2, want=1'}
-    ])
-    (`evaluate [$input] should get error: [$expectedErrorMessage]`, ({input, expectedErrorMessage}) => {
-        let errorMessage;
+        {input: 'len(1)', expectedErrorMessage: 'argument to `len` not supported, got Integer'},
+        {input: 'len("one", "two")', expectedErrorMessage: 'wrong number of arguments. got=2, want=1'}
+    ])('evaluate [$input] should get error: [$expectedErrorMessage]', ({input, expectedErrorMessage}) => {
+        let errorMessage
         try {
             evaluate(input)
         } catch (error) {
@@ -285,8 +284,7 @@ describe('variable binding', () => {
         {input: 'let a = 5 * 5; a;', result: 25},
         {input: 'let a = 5; let b = a; b;', result: 5},
         {input: 'let a = 5; let b = a; let c = a + b + 5; c;', result: 15},
-    ])
-    (`evaluate [$input] should get [$result]`, ({input, result}) => {
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Integer)
@@ -323,8 +321,7 @@ describe('evaluate Function call', () => {
         addTwo(2);
         `, result: 4
         },
-    ])
-    (`evaluate [$input] should get [$result]`, ({input, result}) => {
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Integer)
@@ -332,14 +329,13 @@ describe('evaluate Function call', () => {
     })
 
     test.each([
-        {input: `len("")`, result: 0},
-        {input: `"".length`, result: 0},
-        {input: `len("four")`, result: 4},
-        {input: `"four".length`, result: 4},
-        {input: `len("hello world")`, result: 11},
-        {input: `"hello world".length`, result: 11},
-    ])
-    (`evaluate [$input] should get [$result]`, ({input, result}) => {
+        {input: 'len("")', result: 0},
+        {input: '"".length', result: 0},
+        {input: 'len("four")', result: 4},
+        {input: '"four".length', result: 4},
+        {input: 'len("hello world")', result: 11},
+        {input: '"hello world".length', result: 11},
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 
         assert(evaluated instanceof F_Integer)

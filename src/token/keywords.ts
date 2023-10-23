@@ -1,4 +1,4 @@
-import {TokenType} from "./tokenType";
+import {TokenType} from './tokenType'
 
 export const Keywords = {
     fn: 'fn',
@@ -18,4 +18,4 @@ export const KeywordsToTokenTypeMapping = new Map<string, TokenType>([
     [Keywords.if, TokenType.IF],
     [Keywords.else, TokenType.ELSE],
     [Keywords.return, TokenType.RETURN],
-]);
+])
