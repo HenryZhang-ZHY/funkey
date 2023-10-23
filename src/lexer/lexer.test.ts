@@ -1,7 +1,7 @@
 import {describe, test, expect} from 'vitest'
-import {Lexer} from './lexer.ts'
-import {Token} from '../token/token.ts'
-import {TokenType} from '../token/tokenType.ts'
+import {Lexer} from './lexer'
+import {Token} from '../token/token'
+import {TokenType} from '../token/tokenType'
 
 describe('nextToken', () => {
     test.each([

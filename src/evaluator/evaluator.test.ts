@@ -1,7 +1,7 @@
-import {Lexer} from '../lexer/lexer.ts'
-import {Parser} from '../parser/parser.ts'
-import {evaluate as evalCore, EvaluatingError} from './evaluator.ts'
-import {F_Array, F_Boolean, F_Function, F_Integer, F_Map, F_Null, F_Object, F_String} from '../object/f_Object.ts'
+import {Lexer} from '../lexer/lexer'
+import {Parser} from '../parser/parser'
+import {evaluate as evalCore, EvaluatingError} from './evaluator'
+import {F_Array, F_Boolean, F_Function, F_Integer, F_Map, F_Null, F_Object, F_String} from '../object/f_Object'
 import {assert, describe, expect, test} from 'vitest'
 
 describe('evaluate Integer', () => {

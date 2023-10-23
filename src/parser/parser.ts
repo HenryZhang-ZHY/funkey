@@ -1,4 +1,4 @@
-import {Constants as TokenConstants, Token} from '../token/token.ts'
+import {Constants as TokenConstants, Token} from '../token/token'
 import {
     ArrayLiteral,
     BlockStatement,
@@ -15,10 +15,10 @@ import {
     Program,
     ReturnStatement,
     Statement, StringLiteral
-} from '../ast/ast.ts'
-import {Lexer} from '../lexer/lexer.ts'
-import {TokenType} from "../token/tokenType.ts"
-import {assert} from "vitest";
+} from '../ast/ast'
+import {Lexer} from '../lexer/lexer'
+import {TokenType} from "../token/tokenType"
+import {assert} from "vitest"
 
 type PrefixParseFunction = () => Expression | undefined
 type InfixParseFunction = (leftExpression: Expression) => Expression | undefined

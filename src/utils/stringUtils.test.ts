@@ -1,5 +1,5 @@
 import {describe, test, expect} from 'vitest'
-import {isWhiteSpace, isAsciiLetter, isAsciiDigit} from './stringUtils.ts'
+import {isWhiteSpace, isAsciiLetter, isAsciiDigit} from './stringUtils'
 
 describe('isWhiteSpace', () => {
     test('returns true for whitespace characters', () => {

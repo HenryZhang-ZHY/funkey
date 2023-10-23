@@ -1,4 +1,4 @@
-import {Token} from '../token/token.ts'
+import {Token} from '../token/token'
 
 export interface AstVisitor {
     visitProgram: (x: Program) => void

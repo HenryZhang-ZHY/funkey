@@ -7,7 +7,7 @@ import {
     Node,
     PrefixExpression,
     Program, ReturnStatement, StringLiteral
-} from "../ast/ast.ts"
+} from "../ast/ast"
 import {
     F_Array,
     F_Boolean,
@@ -18,7 +18,7 @@ import {
     F_Object,
     F_String,
     packNativeValue
-} from "../object/f_Object.ts"
+} from "../object/f_Object"
 import {assert} from "vitest"
 
 class ReturnTrap {

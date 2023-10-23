@@ -16,11 +16,11 @@ import {
     ReturnStatement,
     Statement,
     StringLiteral
-} from '../ast/ast.ts'
-import {Lexer} from '../lexer/lexer.ts'
-import {Parser} from './parser.ts'
-import {TokenType} from "../token/tokenType.ts"
-import {Token} from "../token/token.ts"
+} from '../ast/ast'
+import {Lexer} from '../lexer/lexer'
+import {Parser} from './parser'
+import {TokenType} from "../token/tokenType"
+import {Token} from "../token/token"
 
 type LiteralExpressionValue = number | boolean | string
 type Operator = string
