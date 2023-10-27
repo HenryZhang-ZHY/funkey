@@ -18,7 +18,7 @@ import {
 } from '../ast/ast'
 import {Lexer} from '../lexer/lexer'
 import {TokenType} from '../token/tokenType'
-import {assert} from 'vitest'
+import {assert} from '../utils/assert'
 
 type PrefixParseFunction = () => Expression | undefined
 type InfixParseFunction = (leftExpression: Expression) => Expression | undefined
@@ -309,7 +309,7 @@ export class Parser {
     }
 
     private parseMapItems(): Map<Expression, Expression> {
-        const items= new Map<Expression, Expression>
+        const items = new Map<Expression, Expression>
 
         if (this._nextToken.type === TokenType.RBRACE) {
             this.nextToken()

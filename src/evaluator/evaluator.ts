@@ -19,7 +19,7 @@ import {
     F_String,
     packNativeValue
 } from '../object/f_Object'
-import {assert} from 'vitest'
+import {assert} from '../utils/assert'
 
 class ReturnTrap {
     readonly value: F_Object
@@ -313,8 +313,8 @@ class AstEvaluatorVisitor implements AstVisitor {
             throw new Error('index expression is not valid')
         }
 
-        function evaluateArrayIndex(array: F_Array, index: F_Object){
-            if (!(index instanceof  F_Integer)) {
+        function evaluateArrayIndex(array: F_Array, index: F_Object) {
+            if (!(index instanceof F_Integer)) {
                 throw new Error('index expression is not valid')
             }
             if (index.value < 0 || index.value > array.elements.length) {
@@ -324,8 +324,8 @@ class AstEvaluatorVisitor implements AstVisitor {
             return array.elements[index.value]
         }
 
-        function evaluateMapIndex(map: F_Map, index: F_Object){
-            if (!(index instanceof  F_String)) {
+        function evaluateMapIndex(map: F_Map, index: F_Object) {
+            if (!(index instanceof F_String)) {
                 throw new Error('index expression is not valid')
             }
 

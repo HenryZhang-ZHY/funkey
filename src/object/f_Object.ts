@@ -1,4 +1,4 @@
-import {assert} from 'vitest'
+import {assert} from '../utils/assert'
 import {BlockStatement, Identifier} from '../ast/ast'
 import {Environment} from '../evaluator/evaluator'
 
