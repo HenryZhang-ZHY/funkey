@@ -1,3 +1,3 @@
 # funkey
 
-An interpretor writen in TypeScript.
+An interpreter written in TypeScript.
