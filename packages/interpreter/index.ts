@@ -1,1 +1,3 @@
-export { run } from './src/runner/run'
+export {F_Object} from './src/object/f_Object'
+
+export {runWithPrint} from './src/runner/run'

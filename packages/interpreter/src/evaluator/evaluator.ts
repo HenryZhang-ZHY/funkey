@@ -86,6 +86,11 @@ export class Environment {
 
         box.value = value
     }
+
+    declareAndSetVariable(identifier: string, value: F_Object) {
+        this.declareVariable(identifier)
+        this.setVariableValue(identifier, value)
+    }
 }
 
 class Box<T> {

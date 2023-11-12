@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import {run as runCore} from '@funkey/interpreter'
+import {F_Object, runWithPrint} from '@funkey/interpreter'
 import Editor from './Editor.vue'
 import {onMounted, ref} from 'vue'
 
 const code = ref<string>(`let add = fn(a, b) { a + b; };
 
-add(512, 2048);`)
+let result = add(512, 2048);
+
+print(result);`)
 
 const onCodeUpdate = (e) => {
   code.value = e
@@ -14,7 +16,12 @@ const onCodeUpdate = (e) => {
 const output = ref<HTMLDivElement | null>(null)
 
 const run = () => {
-  output.value.innerHTML = runCore(code.value)
+  const lines: string[] = []
+  const print = (...args: F_Object[]) => {
+    lines.push(args.map(x => x.inspect).join(' '))
+  }
+  runWithPrint(code.value, print)
+  output.value.innerHTML = lines.join('<br/>')
 }
 
 onMounted(() => {
