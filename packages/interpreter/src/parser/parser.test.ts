@@ -20,7 +20,6 @@ import {
 import {Lexer} from '../lexer/lexer'
 import {Parser} from './parser'
 import {TokenType} from '../token/tokenType'
-import {Token} from '../token/token'
 
 type LiteralExpressionValue = number | boolean | string
 type Operator = string
@@ -382,8 +381,7 @@ describe('FunctionLiteral', () => {
         const expression = result.expression
         assert(expression instanceof FunctionLiteral)
 
-        const expectedParameters = [identifierLiteral('x'), identifierLiteral('y')]
-        expect(expression.parameters).toEqual(expectedParameters)
+        expect(expression.parameters.map(x => x.value)).toEqual(['x', 'y'])
 
         const bodyStatement = expression.body.statements[0]
         assertInfixExpressionStatement(bodyStatement, 'x', '+', 'y')
@@ -395,10 +393,10 @@ describe('FunctionLiteral', () => {
 
     test.each([
         {input: 'fn() {}', expectedParameters: []},
-        {input: 'fn(a) {}', expectedParameters: [identifierLiteral('a')]},
+        {input: 'fn(a) {}', expectedParameters: ['a']},
         {
             input: 'fn(a, b, c, d) {}',
-            expectedParameters: Array.from(['a', 'b', 'c', 'd'].map(x => identifierLiteral(x)))
+            expectedParameters: ['a', 'b', 'c', 'd']
         },
     ])('parse parameters for [$input]', ({input, expectedParameters}) => {
         const result = parseStatement(input)
@@ -408,7 +406,7 @@ describe('FunctionLiteral', () => {
         const expression = result.expression
         assert(expression instanceof FunctionLiteral)
 
-        expect(expression.parameters).toEqual(expectedParameters)
+        expect(expression.parameters.map(x => x.value)).toEqual(expectedParameters)
     })
 })
 
@@ -478,17 +476,13 @@ describe('CallExpression', () => {
 
         const functionExpression = expression.fn
         assert(functionExpression instanceof FunctionLiteral)
-        expect(functionExpression.parameters).toEqual([identifierLiteral('a'), identifierLiteral('b')])
+        expect(functionExpression.parameters.map(x => x.value)).toEqual(['a', 'b'])
         assertInfixExpressionStatement(functionExpression.body.statements[0], 'a', '+', 'b')
 
         assertIntegerLiteralExpression(expression.args[0], 1)
         assertIntegerLiteralExpression(expression.args[1], 2)
     })
 })
-
-function identifierLiteral(value: string) {
-    return new Identifier(new Token(TokenType.IDENT, value), value)
-}
 
 function parseStatement(statement: string) {
     const program = parseProgram(statement)

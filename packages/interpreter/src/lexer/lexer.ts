@@ -6,9 +6,12 @@ import {KeywordsToTokenTypeMapping} from '../token/keywords'
 const EOF = '\0'
 
 export class Lexer {
-    readonly input: string
+    private readonly input: string
 
-    position: number = 0
+    private position: number = 0
+
+    private line: number = 1
+    private column: number = 1
 
     constructor(input: string) {
         this.input = input
@@ -33,6 +36,13 @@ export class Lexer {
     }
 
     private next(): void {
+        if (this.char === '\n') {
+            this.line += 1
+            this.column = 1
+        } else {
+            this.column += 1
+        }
+
         this.position += 1
     }
 
@@ -42,7 +52,7 @@ export class Lexer {
         let token: Token | undefined
         switch (this.char) {
             case EOF:
-                token = new Token(TokenType.EOF, '')
+                token = this.newToken(TokenType.EOF, '')
                 break
             case '=':
                 if (this.nextChar === '=') {
@@ -111,18 +121,18 @@ export class Lexer {
                 token = this.generateNoLiteralToken(TokenType.RBRACE)
                 break
             case '"':
-                token = new Token(TokenType.STRING, this.readString())
+                token = this.newToken(TokenType.STRING, this.readString())
                 break
             default:
                 if (isAsciiLetter(this.char)) {
                     const identifier = this.readIdentifier()
                     if (KeywordsToTokenTypeMapping.has(identifier)) {
-                        token = new Token(KeywordsToTokenTypeMapping.get(identifier)!, identifier)
+                        token = this.newToken(KeywordsToTokenTypeMapping.get(identifier)!, identifier)
                     } else {
-                        token = new Token(TokenType.IDENT, identifier)
+                        token = this.newToken(TokenType.IDENT, identifier)
                     }
                 } else if (isAsciiDigit(this.char)) {
-                    token = new Token(TokenType.INT, this.readNumber())
+                    token = this.newToken(TokenType.INT, this.readNumber())
                 } else {
                     token = this.generateNoLiteralToken(TokenType.ILLEGAL)
                 }
@@ -169,6 +179,10 @@ export class Lexer {
     }
 
     private generateNoLiteralToken(type: TokenType): Token {
-        return new Token(type, type)
+        return this.newToken(type, type)
+    }
+
+    private newToken(type: TokenType, literal: string): Token {
+        return new Token(type, literal, this.line, this.column - literal.length + (literal.length > 0 ? 1 : 0))
     }
 }

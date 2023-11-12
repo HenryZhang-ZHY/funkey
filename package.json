@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint --cache .",
     "lint:fix": "eslint --cache . --fix",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "pnpm -r run typecheck",
     "ci": "CI=true pnpm run test:all",
     "test:all": "pnpm -r --stream run test --allowOnly",
     "build": "pnpm -r --filter=./packages/* run build",

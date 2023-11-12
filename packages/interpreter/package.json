@@ -5,6 +5,7 @@
   "private": true,
   "main": "index.ts",
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "build": "tsc && vite build",
     "test": "vitest",
     "coverage": "vitest run --coverage"
