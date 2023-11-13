@@ -3,11 +3,17 @@ import {F_Object, runWithPrint} from '@funkey/interpreter'
 import Editor from './Editor.vue'
 import {onMounted, ref} from 'vue'
 
-const code = ref<string>(`let add = fn(a, b) { a + b; };
-
-let result = add(512, 2048);
-
-print(result);`)
+const code = ref<string>(`for (let i = 1; i < 10; i = i + 1) {
+    for (let j = 1; j <= i; j = j + 1) {
+        print(j);
+        print("*");
+        print(i);
+        print("=");
+        print(j*i);
+        print(" ");
+    }
+    print("\\n");
+}`)
 
 const onCodeUpdate = (e) => {
   code.value = e
@@ -16,12 +22,24 @@ const onCodeUpdate = (e) => {
 const output = ref<HTMLDivElement | null>(null)
 
 const run = () => {
-  const lines: string[] = []
+  const buffer: string[] = []
   const print = (...args: F_Object[]) => {
-    lines.push(args.map(x => x.inspect).join(' '))
+    buffer.push(args.map(x => x.inspect).join(' '))
   }
-  runWithPrint(code.value, print)
-  output.value.innerHTML = lines.join('<br/>')
+  try {
+    runWithPrint(code.value, print)
+
+  } catch (error) {
+    let currentError = error
+    let space = ''
+    while (currentError) {
+      buffer.push(`<span style="color: red">${space}${currentError.message}</span>`)
+      space += '&nbsp;&nbsp;'
+      currentError = currentError.innerError
+    }
+  } finally {
+    output.value.innerHTML = buffer.join('').replaceAll('\\n', '<br/>')
+  }
 }
 
 onMounted(() => {
@@ -43,8 +61,9 @@ onMounted(() => {
 
 <style scoped>
 #playground {
-  max-width: calc(var(--vp-layout-max-width) - 64px);
   height: calc(80vh - var(--vp-nav-height));
+  min-height: 400px;
+  max-width: calc(var(--vp-layout-max-width) - 64px);
 
   margin: 8px auto;
 }
@@ -69,7 +88,7 @@ onMounted(() => {
 
 #output {
   width: 100%;
-  height: 28%;
+  min-height: 40%;
 
   margin: 16px 0;
   padding: 16px;
@@ -78,5 +97,7 @@ onMounted(() => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 
   font-family: Consolas, serif;
+
+  overflow: auto;
 }
 </style>

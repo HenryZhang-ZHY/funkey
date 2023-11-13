@@ -104,6 +104,10 @@ describe('evaluate InFixExpression', () => {
         {input: '1 > 2', result: false},
         {input: '1 < 1', result: false},
         {input: '1 > 1', result: false},
+        {input: '1 >= 1', result: true},
+        {input: '2 >= 1', result: true},
+        {input: '1 <= 1', result: true},
+        {input: '1 <= 2', result: true},
         {input: '1 == 1', result: true},
         {input: '1 != 1', result: false},
         {input: '1 == 2', result: false},
@@ -128,6 +132,7 @@ describe('evaluate InFixExpression', () => {
         {input: '-5', result: -5},
         {input: '-10', result: -10},
         {input: '5 + 5 + 5 + 5 - 10', result: 10},
+        {input: '11 % 10', result: 1},
         {input: '2 * 2 * 2 * 2 * 2', result: 32},
         {input: '-50 + 100 + -50', result: 0},
         {input: '5 * 2 + 10', result: 20},
@@ -186,6 +191,17 @@ describe('evaluate DotExpression', () => {
     })
 })
 
+describe('evaluate DotExpression', () => {
+    test.each([
+        {input: 'let a = 1; a = 2; a', result: 2,},
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
+        const evaluated = evaluate(input)
+
+        assert(evaluated instanceof F_Integer)
+        expect(evaluated.value).toBe(result)
+    })
+})
+
 describe('evaluate IfExpression', () => {
     test.each([
         {input: 'if (true) { 10 }', result: 10},
@@ -231,6 +247,18 @@ describe('evaluate ReturnStatement', () => {
                     }
         `, result: 1
         },
+    ])('evaluate [$input] should get [$result]', ({input, result}) => {
+        const evaluated = evaluate(input)
+
+        assert(evaluated instanceof F_Integer)
+        expect(evaluated.value).toBe(result)
+    })
+})
+
+describe('evaluate ForStatement', () => {
+    test.each([
+        {input: 'let r = 0; for (let i = 0; i < 10; i = i + 1) {r = r + 1;} r', result: 10,},
+        {input: 'let r = 0; for (let i = 0; i < 10; i = i + 1) { for (let j = 0; j < 10; j = j + 1) {r = r + 1;}} r', result: 100,},
     ])('evaluate [$input] should get [$result]', ({input, result}) => {
         const evaluated = evaluate(input)
 

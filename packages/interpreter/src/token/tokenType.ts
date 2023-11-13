@@ -14,9 +14,12 @@ export enum TokenType {
     BANG = '!',
     ASTERISK = '*',
     SLASH = '/',
+    MOD = '%',
 
     LT = '<',
+    LTE = '<=',
     GT = '>',
+    GTE = '>=',
     EQ = '==',
     NOT_EQ = '!=',
 
@@ -38,4 +41,5 @@ export enum TokenType {
     IF = 'IF',
     ELSE = 'ELSE',
     RETURN = 'RETURN',
+    FOR = 'FOR',
 }

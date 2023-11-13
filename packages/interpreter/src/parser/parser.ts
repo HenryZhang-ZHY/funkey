@@ -1,10 +1,10 @@
 import {Constants as TokenConstants, Token} from '../token/token'
 import {
-    ArrayLiteral,
+    ArrayLiteral, AssignExpression,
     BlockStatement,
     BooleanLiteral, CallExpression, DotExpression,
     Expression,
-    ExpressionStatement,
+    ExpressionStatement, ForStatement,
     FunctionLiteral,
     Identifier,
     IfExpression, IndexExpression,
@@ -34,20 +34,25 @@ enum OperatorPrecendence {
     CALL,
     INDEX,
     DOT,
+    Assign,
 }
 
 const TokenTypePrecedenceMapping = new Map<TokenType, OperatorPrecendence>([
     [TokenType.EQ, OperatorPrecendence.EQUALS],
     [TokenType.NOT_EQ, OperatorPrecendence.EQUALS],
     [TokenType.LT, OperatorPrecendence.LESSGREATER],
+    [TokenType.LTE, OperatorPrecendence.LESSGREATER],
     [TokenType.GT, OperatorPrecendence.LESSGREATER],
+    [TokenType.GTE, OperatorPrecendence.LESSGREATER],
     [TokenType.PLUS, OperatorPrecendence.SUM],
     [TokenType.MINUS, OperatorPrecendence.SUM],
     [TokenType.SLASH, OperatorPrecendence.PRODUCT],
     [TokenType.ASTERISK, OperatorPrecendence.PRODUCT],
+    [TokenType.MOD, OperatorPrecendence.PRODUCT],
     [TokenType.LPAREN, OperatorPrecendence.CALL],
     [TokenType.LBRACKET, OperatorPrecendence.INDEX],
     [TokenType.DOT, OperatorPrecendence.DOT],
+    [TokenType.ASSIGN, OperatorPrecendence.Assign],
 ])
 
 export class Parser {
@@ -103,17 +108,22 @@ export class Parser {
 
         this.registerInfixParseFunction(TokenType.SLASH, this.parseInfixExpression)
         this.registerInfixParseFunction(TokenType.ASTERISK, this.parseInfixExpression)
+        this.registerInfixParseFunction(TokenType.MOD, this.parseInfixExpression)
 
         this.registerInfixParseFunction(TokenType.EQ, this.parseInfixExpression)
         this.registerInfixParseFunction(TokenType.NOT_EQ, this.parseInfixExpression)
 
         this.registerInfixParseFunction(TokenType.LT, this.parseInfixExpression)
+        this.registerInfixParseFunction(TokenType.LTE, this.parseInfixExpression)
         this.registerInfixParseFunction(TokenType.GT, this.parseInfixExpression)
+        this.registerInfixParseFunction(TokenType.GTE, this.parseInfixExpression)
 
         this.registerInfixParseFunction(TokenType.LPAREN, this.parseCallExpression)
 
         this.registerInfixParseFunction(TokenType.DOT, this.parseDotExpression)
         this.registerInfixParseFunction(TokenType.LBRACKET, this.parseIndexExpression)
+
+        this.registerInfixParseFunction(TokenType.ASSIGN, this.parseAssignExpression)
     }
 
     private registerInfixParseFunction(tokenType: TokenType, fn: InfixParseFunction) {
@@ -150,6 +160,8 @@ export class Parser {
                 return this.parseLetStatement()
             case TokenType.RETURN:
                 return this.parseReturnStatement()
+            case TokenType.FOR:
+                return this.parseForStatement()
             default:
                 return this.parseExpressionStatement()
         }
@@ -193,6 +205,49 @@ export class Parser {
         this.nextToken()
 
         return new ReturnStatement(returnToken, expression)
+    }
+
+    private parseForStatement(): ForStatement | undefined {
+        const token = this._currentToken
+
+        this.nextToken()
+
+        if (!this.assertCurrentTokenTypeIs(TokenType.LPAREN)) {
+            return
+        }
+        this.nextToken()
+
+        const initializationStatement = this.parseStatement()
+        if (!this.assertCurrentTokenTypeIs(TokenType.SEMICOLON)) {
+            return
+        }
+        this.nextToken()
+
+        const conditionStatement = this.parseExpressionStatement()
+        if (!this.assertCurrentTokenTypeIs(TokenType.SEMICOLON)) {
+            return
+        }
+        this.nextToken()
+
+        const updateStatement = this.parseStatement()
+
+        if (!this.assertNextTokenTypeIs(TokenType.RPAREN)) {
+            return
+        }
+        this.nextToken()
+
+        if (!this.assertNextTokenTypeIs(TokenType.LBRACE)) {
+            return
+        }
+        this.nextToken()
+
+        const bodyStatement = this.parseBlockStatement()
+        if (!bodyStatement) {
+            this.addParseError('parse consequence failed')
+            return
+        }
+
+        return new ForStatement(token, bodyStatement, initializationStatement, conditionStatement, updateStatement)
     }
 
     private parseExpressionStatement(): ExpressionStatement {
@@ -568,6 +623,19 @@ export class Parser {
         this.nextToken()
 
         return new IndexExpression(token, left, indexExpression)
+    }
+
+    private parseAssignExpression(left: Expression): AssignExpression | undefined {
+        const token = this._currentToken
+
+        this.nextToken()
+        const right = this.parseExpression(OperatorPrecendence.LOWEST)
+        if (!right) {
+            this.addParseError('parse right expression failed.')
+            return
+        }
+
+        return new AssignExpression(token, left, right)
     }
 
     private parseIdentifier(): Identifier | undefined {

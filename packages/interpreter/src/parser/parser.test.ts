@@ -1,10 +1,10 @@
 import {assert, describe, expect, test} from 'vitest'
 import {
-    ArrayLiteral,
+    ArrayLiteral, AssignExpression,
     BooleanLiteral,
     CallExpression, DotExpression,
     Expression,
-    ExpressionStatement,
+    ExpressionStatement, ForStatement,
     FunctionLiteral,
     Identifier,
     IfExpression, IndexExpression,
@@ -69,6 +69,29 @@ describe('ReturnStatement', () => {
         assert(result instanceof ReturnStatement)
         assert(result.expression)
         assertLiteralExpression(result.expression, expression)
+    })
+})
+
+describe('ForStatement', () => {
+    test('normal', () => {
+        const input = 'for (let i = 0; i < 10; let i = i + 1;) { print(i); }'
+
+        const result = parseStatement(input)
+
+        assert(result instanceof ForStatement)
+
+        const initializationStatement = result.initializationStatement
+        assert(initializationStatement instanceof LetStatement)
+        assertLetStatement(initializationStatement, 'i', 0)
+
+        const conditionStatement = result.conditionStatement
+        assert(conditionStatement instanceof ExpressionStatement)
+        assertInfixExpressionStatement(conditionStatement, 'i', '<', 10)
+
+        const updateStatement = result.updateStatement
+        assert(updateStatement instanceof LetStatement)
+        expect(updateStatement.identifier.value).toBe('i')
+        assertInfixExpression(updateStatement.expression!, 'i', '+', 1)
     })
 })
 
@@ -146,6 +169,19 @@ describe('ExpressionStatement', () => {
         assert(result.expression)
         const expression = result.expression
         assert(expression instanceof DotExpression)
+        assertIdentifierExpression(expression.left, 'a')
+        assertIdentifierExpression(expression.right, 'b')
+    })
+
+    test('parse AssignExpression', () => {
+        const statement = 'a = b'
+        const result = parseStatement(statement)
+
+        assert(result instanceof ExpressionStatement)
+
+        assert(result.expression)
+        const expression = result.expression
+        assert(expression instanceof AssignExpression)
         assertIdentifierExpression(expression.left, 'a')
         assertIdentifierExpression(expression.right, 'b')
     })

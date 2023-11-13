@@ -6,11 +6,13 @@ export interface AstVisitor {
     visitBlockStatement: (x: BlockStatement) => void
     visitLetStatement: (x: LetStatement) => void
     visitReturnStatement: (x: ReturnStatement) => void
+    visitForStatement: (x: ForStatement) => void
     visitPrefixExpression: (x: PrefixExpression) => void
     visitInfixExpression: (x: InfixExpression) => void
     visitCallExpression: (x: CallExpression) => void
     visitIndexExpression: (x: IndexExpression) => void
     visitDotExpression: (x: DotExpression) => void
+    visitAssignExpression: (x: AssignExpression) => void
     visitIntegerLiteral: (x: IntegerLiteral) => void
     visitBooleanLiteral: (x: BooleanLiteral) => void
     visitStringLiteral: (x: StringLiteral) => void
@@ -306,6 +308,31 @@ export class DotExpression implements Expression {
     }
 }
 
+export class AssignExpression implements Expression {
+    private readonly token: Token
+
+    readonly left: Expression
+    readonly right: Expression
+
+    constructor(token: Token, left: Expression, right: Expression) {
+        this.token = token
+        this.left = left
+        this.right = right
+    }
+
+    get tokenLiteral(): string {
+        return this.token.literal
+    }
+
+    toString(): string {
+        return `(${this.left}.${this.right})`
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitAssignExpression(this)
+    }
+}
+
 export class PrefixExpression implements Expression {
     private readonly token: Token
 
@@ -443,6 +470,35 @@ export class LetStatement implements Statement {
 
     accept(visitor: AstVisitor): void {
         visitor.visitLetStatement(this)
+    }
+}
+
+export class ForStatement implements Statement {
+    private readonly token: Token
+
+    readonly bodyStatement: BlockStatement
+    readonly initializationStatement: Statement | undefined
+    readonly conditionStatement: ExpressionStatement | undefined
+    readonly updateStatement: Statement | undefined
+
+    constructor(token: Token, bodyStatement: BlockStatement, initializationStatement: Statement | undefined = undefined, conditionStatement: ExpressionStatement | undefined = undefined, updateStatement: Statement | undefined = undefined) {
+        this.token = token
+        this.bodyStatement = bodyStatement
+        this.initializationStatement = initializationStatement
+        this.conditionStatement = conditionStatement
+        this.updateStatement = updateStatement
+    }
+
+    get tokenLiteral(): string {
+        return this.token.literal
+    }
+
+    toString(): string {
+        return `for(${this.initializationStatement};${this.conditionStatement};${this.updateStatement}){${this.bodyStatement}}`
+    }
+
+    accept(visitor: AstVisitor): void {
+        visitor.visitForStatement(this)
     }
 }
 

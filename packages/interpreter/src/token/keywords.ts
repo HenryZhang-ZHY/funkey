@@ -8,6 +8,7 @@ export const Keywords = {
     if: 'if',
     else: 'else',
     return: 'return',
+    for: 'for',
 }
 
 export const KeywordsToTokenTypeMapping = new Map<string, TokenType>([
@@ -18,4 +19,5 @@ export const KeywordsToTokenTypeMapping = new Map<string, TokenType>([
     [Keywords.if, TokenType.IF],
     [Keywords.else, TokenType.ELSE],
     [Keywords.return, TokenType.RETURN],
+    [Keywords.for, TokenType.FOR],
 ])

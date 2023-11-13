@@ -1,8 +1,8 @@
 import {
-    ArrayLiteral,
+    ArrayLiteral, AssignExpression,
     AstVisitor, BlockStatement,
     BooleanLiteral, CallExpression, DotExpression,
-    ExpressionStatement, FunctionLiteral, Identifier, IfExpression, IndexExpression, InfixExpression,
+    ExpressionStatement, ForStatement, FunctionLiteral, Identifier, IfExpression, IndexExpression, InfixExpression,
     IntegerLiteral, LetStatement, MapLiteral,
     Node,
     PrefixExpression,
@@ -169,6 +169,21 @@ class AstEvaluatorVisitor implements AstVisitor {
         }
     }
 
+    visitForStatement(x: ForStatement) {
+        const environment = new Environment(this.environment)
+        if (x.initializationStatement) {
+            evaluate(x.initializationStatement, environment)
+        }
+
+        while (x.conditionStatement === undefined || this.isTruthy(evaluate(x.conditionStatement, environment))) {
+            evaluate(x.bodyStatement, environment)
+            if (x.updateStatement) {
+                evaluate(x.updateStatement, environment)
+
+            }
+        }
+    }
+
     visitPrefixExpression(x: PrefixExpression) {
         switch (x.operator) {
             case '!':
@@ -195,6 +210,11 @@ class AstEvaluatorVisitor implements AstVisitor {
     }
 
     visitInfixExpression(x: InfixExpression) {
+        if (x.operator === '=' && x.left instanceof Identifier) {
+            this.environment.setVariableValue(x.left.value, evaluate(x.right, this.environment))
+            return
+        }
+
         const left = evaluate(x.left, this.environment)
         const right = evaluate(x.right, this.environment)
         switch (x.operator) {
@@ -202,6 +222,7 @@ class AstEvaluatorVisitor implements AstVisitor {
             case '-':
             case '*':
             case '/':
+            case '%':
                 if (left instanceof F_Integer && right instanceof F_Integer) {
                     this._result = evaluateArithmeticExpression(left, x.operator, right)
                     break
@@ -216,7 +237,9 @@ class AstEvaluatorVisitor implements AstVisitor {
                     }
                 }
             case '>':
+            case '>=':
             case '<':
+            case '<=':
                 assert(left instanceof F_Integer)
                 assert(right instanceof F_Integer)
                 this._result = evaluateComparingExpression(left, x.operator, right)
@@ -229,7 +252,7 @@ class AstEvaluatorVisitor implements AstVisitor {
                 break
         }
 
-        function evaluateArithmeticExpression(left: F_Integer, operator: '+' | '-' | '*' | '/', right: F_Integer): F_Integer {
+        function evaluateArithmeticExpression(left: F_Integer, operator: '+' | '-' | '*' | '/' | '%', right: F_Integer): F_Integer {
             switch (operator) {
                 case '+':
                     return packNativeValue(left.value + right.value)
@@ -239,10 +262,12 @@ class AstEvaluatorVisitor implements AstVisitor {
                     return packNativeValue(left.value * right.value)
                 case '/':
                     return packNativeValue(left.value / right.value)
+                case '%':
+                    return packNativeValue(left.value % right.value)
             }
         }
 
-        function evaluateComparingExpression(left: F_Integer, operator: '>' | '<' | '==' | '!=', right: F_Integer): F_Boolean {
+        function evaluateComparingExpression(left: F_Integer, operator: '>' | '<' | '==' | '!=' | '>=' | '<=', right: F_Integer): F_Boolean {
             switch (operator) {
                 case '>':
                     return packNativeValue(left.value > right.value)
@@ -252,6 +277,10 @@ class AstEvaluatorVisitor implements AstVisitor {
                     return packNativeValue(left.value == right.value)
                 case '!=':
                     return packNativeValue(left.value != right.value)
+                case '>=':
+                    return packNativeValue(left.value >= right.value)
+                case '<=':
+                    return packNativeValue(left.value <= right.value)
             }
         }
 
@@ -304,6 +333,15 @@ class AstEvaluatorVisitor implements AstVisitor {
         }
 
         this._result = result
+    }
+
+    visitAssignExpression(x: AssignExpression) {
+        const {left, right} = x
+        if (!(left instanceof Identifier)) {
+            throw new Error('left side of assignment should be a identifier')
+        }
+
+        this.environment.setVariableValue(left.value, evaluate(right, this.environment))
     }
 
     visitIndexExpression(x: IndexExpression) {

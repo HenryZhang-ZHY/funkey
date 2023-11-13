@@ -5,7 +5,11 @@ import {TokenType} from '../token/tokenType'
 
 describe('nextToken', () => {
     test.each([
-        {input: 'let', expectedToken: new Token(TokenType.LET, 'let', 0, 0)}
+        {input: 'let', expectedToken: new Token(TokenType.LET, 'let', 0, 0)},
+        {input: 'for', expectedToken: new Token(TokenType.FOR, 'for', 0, 0)},
+        {input: '%', expectedToken: new Token(TokenType.MOD, '%', 0, 0)},
+        {input: '>=', expectedToken: new Token(TokenType.GTE, '>=', 0, 0)},
+        {input: '<=', expectedToken: new Token(TokenType.LTE, '<=', 0, 0)},
     ])(
         'Token should be $expectedToken.type, $expectedToken.literal',
         ({input, expectedToken}) => {

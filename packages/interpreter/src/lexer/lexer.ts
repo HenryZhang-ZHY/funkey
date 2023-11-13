@@ -73,10 +73,22 @@ export class Lexer {
                 }
                 break
             case '<':
-                token = this.generateNoLiteralToken(TokenType.LT)
+                if (this.nextChar === '=') {
+                    token = this.generateNoLiteralToken(TokenType.LTE)
+
+                    this.next()
+                } else {
+                    token = this.generateNoLiteralToken(TokenType.LT)
+                }
                 break
             case '>':
-                token = this.generateNoLiteralToken(TokenType.GT)
+                if (this.nextChar === '=') {
+                    token = this.generateNoLiteralToken(TokenType.GTE)
+
+                    this.next()
+                } else {
+                    token = this.generateNoLiteralToken(TokenType.GT)
+                }
                 break
             case '+':
                 token = this.generateNoLiteralToken(TokenType.PLUS)
@@ -89,6 +101,9 @@ export class Lexer {
                 break
             case '/':
                 token = this.generateNoLiteralToken(TokenType.SLASH)
+                break
+            case '%':
+                token = this.generateNoLiteralToken(TokenType.MOD)
                 break
             case '.':
                 token = this.generateNoLiteralToken(TokenType.DOT)
