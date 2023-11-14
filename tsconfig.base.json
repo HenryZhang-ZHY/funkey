@@ -1,13 +1,19 @@
 {
   "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["esnext"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "declaration": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "resolveJsonModule": true,
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
     "outDir": "./dist",
-    "declaration": true,
     "inlineSourceMap": true,
     "removeComments": true,
-    "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
@@ -17,9 +23,5 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
-  },
-  "exclude": [
-    "**/dist/**",
-    "./packages/*/*.d.ts",
-  ]
+  }
 }
