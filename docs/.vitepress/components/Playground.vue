@@ -1,25 +1,18 @@
 <script setup lang="ts">
-import {F_Object, runWithPrint} from '@funkey/interpreter'
+import Console from './Console.vue'
+import CodeSampleSelector from './CodeSampleSelector.vue'
 import Editor from './Editor.vue'
+import ToolBar from './ToolBar.vue'
 import {onMounted, ref} from 'vue'
+import {F_Object, runWithPrint} from '@funkey/interpreter'
+import {data as CodeSamples} from "../data/playground/PlaygroundSamples.data";
 
-const code = ref<string>(`for (let i = 1; i < 10; i = i + 1) {
-    for (let j = 1; j <= i; j = j + 1) {
-        print(j);
-        print("*");
-        print(i);
-        print("=");
-        print(j*i);
-        print(" ");
-    }
-    print("\\n");
-}`)
+const code = ref<string>(`print("Hello World");`)
+const output = ref<string>('')
 
-const onCodeUpdate = (e) => {
-  code.value = e
+const onSampleSelected = (codeText: string) => {
+  code.value = codeText
 }
-
-const output = ref<HTMLDivElement | null>(null)
 
 const run = () => {
   const buffer: string[] = []
@@ -38,7 +31,7 @@ const run = () => {
       currentError = currentError.innerError
     }
   } finally {
-    output.value.innerHTML = buffer.join('').replaceAll('\\n', '<br/>')
+    output.value = buffer.join('').replaceAll('\\n', '<br/>')
   }
 }
 
@@ -49,13 +42,18 @@ onMounted(() => {
 
 <template>
   <div id="playground">
-    <div id="tool-bar">
-      <button id="btn-run" @click="run">run</button>
-    </div>
+    <ToolBar>
+      <template #left>
+        <CodeSampleSelector :chapters="CodeSamples.chapters" @select:code="onSampleSelected"/>
+      </template>
+      <template #right>
+        <button id="btn-run" @click="run">run</button>
+      </template>
+    </ToolBar>
 
-    <Editor :model-value="code" :lang="'funkey'" :hide-minimap="false" @update:model-value="onCodeUpdate"/>
+    <Editor v-model="code" :lang="'funkey'" :hide-minimap="false"/>
 
-    <div id="output" ref="output"></div>
+    <Console :content="output"></Console>
   </div>
 </template>
 
@@ -68,15 +66,6 @@ onMounted(() => {
   margin: 8px auto;
 }
 
-#tool-bar {
-  height: 32px;
-
-  display: flex;
-  flex-direction: row-reverse;
-
-  margin-bottom: 8px;
-}
-
 #btn-run {
   width: 64px;
   border-radius: 4px;
@@ -84,20 +73,6 @@ onMounted(() => {
 
   color: white;
   font-size: 18px;
-}
-
-#output {
-  width: 100%;
-  min-height: 40%;
-
-  margin: 16px 0;
-  padding: 16px;
-
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-
-  font-family: Consolas, serif;
-
-  overflow: auto;
+  font-weight: 400;
 }
 </style>

@@ -1,0 +1,12 @@
+let cnt = 0;
+
+let add = fn() {
+    cnt = cnt + 1;
+    cnt;
+};
+
+print(add());
+print("\n");
+print(add());
+print("\n");
+print(add());

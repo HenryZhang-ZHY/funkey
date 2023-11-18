@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
-import {computed, onMounted, ref} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 
 interface Props {
   modelValue: string
@@ -8,16 +8,12 @@ interface Props {
   hideMinimap?: boolean
 }
 
-const {
-  hideMinimap,
-  lang = 'funkey',
-  modelValue,
-} = defineProps<Props>()
+const props = defineProps<Props>()
 
 const emits = defineEmits(['update:modelValue'])
 
 const vModel = computed<string>({
-  get: () => modelValue,
+  get: () => props.modelValue,
   set: (newVal: string) => {
     emits('update:modelValue', newVal)
   },
@@ -102,11 +98,21 @@ onMounted(async () => {
     },
   })
 
-  const model = monacoEditor.createModel(vModel.value, lang)
+  const model = monacoEditor.createModel(vModel.value, props.lang)
   model.onDidChangeContent(() => {
     vModel.value = model.getValue()
   })
-
+  watch(
+      () => props.modelValue,
+      (newValue) => {
+        if (model) {
+          const value = model.getValue()
+          if (newValue !== value) {
+            model.setValue(newValue)
+          }
+        }
+      }
+  )
   monacoEditor.create(root.value, {
     model,
     theme: 'vs',
@@ -119,7 +125,7 @@ onMounted(async () => {
     tabSize: 2,
     automaticLayout: true,
     minimap: {
-      enabled: !hideMinimap,
+      enabled: !props.hideMinimap,
     },
     fontSize: 16,
   })
