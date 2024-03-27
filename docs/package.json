@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@funkey/interpreter": "workspace:*",
-    "monaco-editor": "^0.44.0",
+    "monaco-editor": "0.44.0",
     "vue": "latest"
   },
   "devDependencies": {
